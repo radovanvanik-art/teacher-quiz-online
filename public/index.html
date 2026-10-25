@@ -149,6 +149,20 @@
   .progress-fill{background:linear-gradient(90deg, var(--gold-dim), var(--gold));height:100%;border-radius:99px;transition:width .3s ease;}
   .qmeta{font-size:13px;color:var(--text-muted);display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
   .qmeta .pill{background:var(--panel-2);border:1px solid var(--gold);padding:4px 10px;border-radius:99px;}
+  .qmeta .pill-streak{background:rgba(217,105,36,.15);border-color:#d96924;color:#a6491a;font-weight:700;animation:streakPulse 1.1s ease infinite;}
+  @keyframes streakPulse{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.06);} }
+
+  #tq-toast-host{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:100%;max-width:420px;padding:0 14px;}
+  .tq-toast{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:10px 18px;font-weight:700;font-size:14px;color:var(--text);box-shadow:0 6px 16px rgba(58,47,34,.25);opacity:0;transform:translateY(-14px) scale(.96);transition:opacity .25s ease, transform .25s ease;text-align:center;}
+  .tq-toast.show{opacity:1;transform:translateY(0) scale(1);}
+  .tq-toast-badge{background:linear-gradient(135deg, var(--gold-dim), var(--gold));border-color:var(--gold);color:#3a2f22;}
+
+  .tq-confetti-host{position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden;}
+  .tq-confetti-piece{position:absolute;top:-10px;width:9px;height:14px;opacity:.9;border-radius:2px;animation:confettiFall linear forwards;}
+  @keyframes confettiFall{ to{ transform:translateY(110vh) rotate(540deg); opacity:.3; } }
+
+  .badges-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0;}
+  .badge-chip{background:var(--panel-2);border:1px solid var(--gold);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--text);cursor:default;}
 
   .stage-card{text-align:center;padding:44px 32px;position:relative;}
   @media (max-width:600px){.stage-card{padding:32px 18px;}}
@@ -180,12 +194,16 @@
   }
   .opt:hover{border-color:var(--gold);transform:translateY(-1px);}
   .opt.picked{border-color:var(--gold);background:rgba(61,93,120,.08);}
-  .opt.reveal-correct{border-color:var(--correct);background:var(--correct-bg);}
+  .opt.reveal-correct{border-color:var(--correct);background:var(--correct-bg);animation:popCorrect .3s ease;}
   .opt.reveal-correct .letter{background:var(--correct);}
-  .opt.reveal-wrong{border-color:var(--wrong);background:var(--wrong-bg);}
+  .opt.reveal-wrong{border-color:var(--wrong);background:var(--wrong-bg);animation:shakeWrong .4s ease;}
   .opt.reveal-wrong .letter{background:var(--wrong);}
   .opt:disabled{cursor:default;}
   .opt:disabled:hover{transform:none;}
+  @keyframes popCorrect{ 0%{transform:scale(1);} 40%{transform:scale(1.035);} 100%{transform:scale(1);} }
+  @keyframes shakeWrong{ 10%,90%{transform:translateX(-1px);} 20%,80%{transform:translateX(2px);} 30%,50%,70%{transform:translateX(-4px);} 40%,60%{transform:translateX(4px);} }
+  .text-answer-input.bad{animation:shakeWrong .4s ease;}
+  .text-answer-input.ok{animation:popCorrect .3s ease;}
 
   .reveal-box{margin-top:22px;}
   .answer-pill{display:inline-flex;flex-direction:column;gap:4px;background:var(--correct-bg);border:2px solid var(--correct);border-radius:8px;padding:14px 26px;}
@@ -266,6 +284,7 @@
   .flag-chip.flag-fr{background:linear-gradient(90deg,#0055a4 0 33%,#fff 33% 66%,#ef4135 66%);}
   .flag-chip.flag-es{background:linear-gradient(180deg,#aa151b 0 25%,#f1bf00 25% 75%,#aa151b 75%);}
   .flag-chip.flag-sk{background:linear-gradient(180deg,#fff 0 33%,#0b4ea2 33% 66%,#ee1c25 66%);}
+  .flag-chip.flag-it{background:linear-gradient(90deg,#009246 0 33%,#fff 33% 66%,#ce2b37 66%);}
 
   /* ---------- text-input answers (fill / riddle / emoji / scramble) ---------- */
   .text-answer-wrap{display:flex;justify-content:center;margin:24px 0 6px;}
@@ -504,6 +523,123 @@ const GOOGLE_G_SVG = `<svg viewBox="0 0 48 48" width="19" height="19" aria-hidde
 const PASS_THRESHOLD = 10;
 const PLAYER_COLORS = ['#f0b23e','#49b47c','#5b9ee0','#e05a45','#c77dff','#4dd0c4','#ff8fab','#d8b4fe'];
 
+const BADGES = {
+  prvykrok: { icon:'🥾', label:'Prvý krok', desc:'Dokončil/-a si svoju prvú zastávku.' },
+  bezchyby: { icon:'💎', label:'Bez chyby', desc:'Zvládol/-a si celú zastávku na 100 %.' },
+  seria5:   { icon:'🔥', label:'Žeravá séria', desc:'5 správnych odpovedí v rade.' },
+  seria10:  { icon:'🚀', label:'Na plný plyn', desc:'10 správnych odpovedí v rade.' },
+  polovica: { icon:'🏔️', label:'Polovica cesty', desc:'Prešiel/-la si polovicu mapy.' },
+  letisko:  { icon:'✈️', label:'Pri bráne', desc:'Dosiahol/-la si letisko.' },
+  majster:  { icon:'👑', label:'Majster mapy', desc:'Celá mapa bez jedinej chyby.' },
+  objavitel:{ icon:'🌍', label:'Objaviteľ', desc:'Dokončil/-a si zahraničnú destináciu.' },
+};
+
+/* ---- zvuky (Web Audio, bez súborov) ---- */
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(audioCtx && audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); }
+  return audioCtx;
+}
+function isSoundOn(){ try{ return window.localStorage.getItem('tq_sound')!=='off'; }catch(e){ return true; } }
+function toggleSound(){ try{ window.localStorage.setItem('tq_sound', isSoundOn()?'off':'on'); }catch(e){} render(); }
+function tone(ctx, freq, t, dur, type, peak){
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type||'sine'; o.frequency.setValueAtTime(freq, t);
+  o.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(peak||0.18, t+0.018);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.start(t); o.stop(t+dur+0.02);
+}
+function playSound(kind){
+  if(!isSoundOn()) return;
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const now = ctx.currentTime;
+  if(kind==='correct'){ [523.25,659.25,783.99].forEach((f,i)=>tone(ctx, f, now+i*0.07, 0.22, 'sine')); }
+  else if(kind==='wrong'){
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type='sawtooth'; o.frequency.setValueAtTime(220, now); o.frequency.exponentialRampToValueAtTime(100, now+0.26);
+    o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.14, now+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+0.3);
+    o.start(now); o.stop(now+0.32);
+  } else if(kind==='badge'){ [659.25,987.77,1318.5].forEach((f,i)=>tone(ctx, f, now+i*0.09, 0.3, 'triangle', 0.2)); }
+}
+
+/* ---- text-to-speech pre diktátové otázky ---- */
+function speak(text){
+  try{
+    if(!('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 0.88;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function speakCurrent(){
+  if(ui.screen!=='stage') return;
+  const { q, type } = getCurrentQuestion();
+  if(type==='listen' && q.sentence) speak(q.sentence);
+}
+
+/* ---- toasty (odznaky, bonusy) ---- */
+function getToastHost(){
+  let host = document.getElementById('tq-toast-host');
+  if(!host){ host = document.createElement('div'); host.id = 'tq-toast-host'; document.body.appendChild(host); }
+  return host;
+}
+function showToast(text, kind){
+  const host = getToastHost();
+  const el = document.createElement('div');
+  el.className = 'tq-toast' + (kind==='badge' ? ' tq-toast-badge' : '');
+  el.textContent = text;
+  host.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(), 300); }, 2800);
+}
+
+/* ---- konfety ---- */
+function burstConfetti(){
+  const host = document.createElement('div');
+  host.className = 'tq-confetti-host';
+  document.body.appendChild(host);
+  for(let i=0;i<26;i++){
+    const p = document.createElement('span');
+    p.className = 'tq-confetti-piece';
+    p.style.left = (40+Math.random()*20)+'%';
+    p.style.background = PLAYER_COLORS[i % PLAYER_COLORS.length];
+    p.style.animationDelay = (Math.random()*0.18)+'s';
+    p.style.setProperty('--dx', (Math.random()*220-110)+'px');
+    p.style.setProperty('--rot', (Math.random()*720-360)+'deg');
+    host.appendChild(p);
+  }
+  setTimeout(()=>host.remove(), 1700);
+}
+
+/* ---- odznaky ---- */
+function awardBadge(id){
+  if(!progress || !BADGES[id]) return;
+  if(!progress.badges) progress.badges = [];
+  if(progress.badges.includes(id)) return;
+  progress.badges.push(id);
+  const b = BADGES[id];
+  playSound('badge');
+  showToast(`${b.icon} Nový odznak: ${b.label}`, 'badge');
+  if(id==='bezchyby' || id==='majster' || id==='objavitel') burstConfetti();
+}
+function checkBadges(){
+  if(!progress) return;
+  if((progress.bestStreak||0)>=5) awardBadge('seria5');
+  if((progress.bestStreak||0)>=10) awardBadge('seria10');
+  if(progress.reachedAirport) awardBadge('letisko');
+  if(!progress.destination && journeyProgressPct(progress)>=50) awardBadge('polovica');
+  if(!progress.destination && progress.reachedAirport && progress.score>=MAP_TOTAL) awardBadge('majster');
+  if(progress.destFinished) awardBadge('objavitel');
+}
+
 const TEST_QUESTIONS = [
   {sk:'Ahoj', options:['Hello','Goodbye','Please','Sorry'], answer:0},
   {sk:'Ďakujem', options:['Thank you','Sorry','Please','Welcome'], answer:0},
@@ -626,6 +762,16 @@ const MAP_STOPS = [
     {type:'truefalse', statement:'"It\'s" with an apostrophe always means "belongs to it".', options:['Pravda','Nepravda'], answer:1, trapNote:'„It\'s" (s apostrofom) znamená „it is". Privlastňovacie je „its" bez apostrofu!'},
     {type:'truefalse', statement:'The past tense of "go" is "goed".', options:['Pravda','Nepravda'], answer:1, trapNote:'Správny tvar je nepravidelné sloveso „went".'},
   ]},
+  {id:'diktat', zone:'skola', icon:'🎧', title:'Diktát — počúvanie', type:'listen', questions:[
+    {sentence:'I live in a small house.', answer:'I live in a small house.', sk:'Bývam v malom dome.'},
+    {sentence:'She works in a bank.', answer:'She works in a bank.', sk:'Pracuje v banke.'},
+    {sentence:'We are going to the cinema.', answer:'We are going to the cinema.', sk:'Ideme do kina.'},
+    {sentence:'He can speak three languages.', answer:'He can speak three languages.', sk:'Vie hovoriť troma jazykmi.'},
+    {sentence:'They have two children.', answer:'They have two children.', sk:'Majú dve deti.'},
+    {sentence:'The train leaves at nine.', answer:'The train leaves at nine.', sk:'Vlak odchádza o deviatej.'},
+    {sentence:'I need to buy some milk.', answer:'I need to buy some milk.', sk:'Musím kúpiť mlieko.'},
+    {sentence:'She is reading a good book.', answer:'She is reading a good book.', sk:'Číta dobrú knihu.'},
+  ]},
   {id:'obrazky', zone:'kaviaren', icon:'🎈', title:'Obrázky a situácie', type:'emoji', questions:[
     {emoji:'🎂', answer:'cake', sk:'torta'},
     {emoji:'🕶️', answer:'sunglasses', sk:'slnečné okuliare'},
@@ -698,6 +844,16 @@ const MAP_STOPS = [
     {sentence:"Let's meet ___ the café at five.", answer:'at', sk:'Stretneme sa v kaviarni o piatej.'},
     {sentence:'Thanks a lot, I really appreciate ___.', answer:'it', sk:'Vďaka, naozaj si to vážim.'},
   ]},
+  {id:'restauracia-vety', zone:'kaviaren', icon:'🍽️', title:'Poskladaj vetu — reštaurácia', type:'order', questions:[
+    {words:['I','would','like','a','coffee'], sk:'Chcel by som si dať kávu.'},
+    {words:['Can','I','see','the','menu'], sk:'Môžem vidieť menu?'},
+    {words:['The','bill','please'], sk:'Účet, prosím.'},
+    {words:['I','am','very','hungry'], sk:'Som veľmi hladný.'},
+    {words:['This','soup','is','delicious'], sk:'Táto polievka je výborná.'},
+    {words:['Do','you','have','a','table','for','two'], sk:'Máte stôl pre dvoch?'},
+    {words:['I','would','like','to','order','now'], sk:'Chcel by som si teraz objednať.'},
+    {words:['Can','I','pay','by','card'], sk:'Môžem platiť kartou?'},
+  ]},
   {id:'jedlo', zone:'mesto', icon:'🛒', title:'Jedlo a nakupovanie', type:'mc', questions:[
     {sk:'Syr', options:['Cheese','Butter','Milk','Yogurt'], answer:0},
     {sk:'Maslo', options:['Butter','Cheese','Cream','Oil'], answer:0},
@@ -721,6 +877,18 @@ const MAP_STOPS = [
     {sk:'Odlet', options:['Departure','Arrival','Boarding','Delay'], answer:0},
     {sk:'Prílet', options:['Arrival','Departure','Landing','Take-off'], answer:0},
     {sk:'Východ (k lietadlu)', options:['Gate','Platform','Terminal','Exit'], answer:0},
+  ]},
+  {id:'volnycas', zone:'mesto', icon:'⚽', title:'Voľný čas a záľuby', type:'mc', questions:[
+    {sk:'Záľuba', options:['Hobby','Job','Duty','Task'], answer:0},
+    {sk:'Čítanie', options:['Reading','Writing','Speaking','Listening'], answer:0},
+    {sk:'Plávanie', options:['Swimming','Running','Cycling','Walking'], answer:0},
+    {sk:'Turistika (chôdza v prírode)', options:['Hiking','Camping','Climbing','Jogging'], answer:0},
+    {sk:'Rybolov', options:['Fishing','Hunting','Sailing','Diving'], answer:0},
+    {sk:'Záhradkárčenie', options:['Gardening','Farming','Cooking','Painting'], answer:0},
+    {sk:'Maľovanie', options:['Painting','Drawing','Sculpting','Designing'], answer:0},
+    {sk:'Fotografovanie', options:['Photography','Filming','Printing','Drawing'], answer:0},
+    {sk:'Jóga', options:['Yoga','Pilates','Gymnastics','Dancing'], answer:0},
+    {sk:'Stolný tenis', options:['Table tennis','Tennis','Badminton','Squash'], answer:0},
   ]},
   {id:'technologie', zone:'kancelaria', icon:'💻', title:'Technológie a internet', type:'mc', questions:[
     {sk:'Heslo', options:['Password','Username','Login','Code'], answer:0},
@@ -805,6 +973,16 @@ const MAP_STOPS = [
     {sk:'Zlepšiť (situáciu)', options:['Ameliorate','Aggravate','Alleviate','Accelerate'], answer:0},
     {sk:'Povrchný/vykonaný bez záujmu', options:['Perfunctory','Meticulous','Diligent','Thorough'], answer:0},
     {sk:'Zrozumiteľný len málokomu (odborný)', options:['Esoteric','Exotic','Eccentric','Elite'], answer:0},
+  ]},
+  {id:'diktat-expert', zone:'hlavnemesto', icon:'🎙️', title:'Expertný diktát', type:'listen', questions:[
+    {sentence:'Although it was raining, we decided to go for a walk.', answer:'Although it was raining, we decided to go for a walk.', sk:'Hoci pršalo, rozhodli sme sa ísť na prechádzku.'},
+    {sentence:'She has been working on this project since last spring.', answer:'She has been working on this project since last spring.', sk:'Pracuje na tomto projekte od minulej jari.'},
+    {sentence:'If I had known about the meeting, I would have attended.', answer:'If I had known about the meeting, I would have attended.', sk:'Keby som vedel o schôdzi, bol by som sa zúčastnil.'},
+    {sentence:'The company announced a significant increase in its annual revenue.', answer:'The company announced a significant increase in its annual revenue.', sk:'Spoločnosť oznámila výrazný nárast svojich ročných príjmov.'},
+    {sentence:'He apologized for the misunderstanding and promised to fix it.', answer:'He apologized for the misunderstanding and promised to fix it.', sk:'Ospravedlnil sa za nedorozumenie a sľúbil, že to napraví.'},
+    {sentence:'Despite the difficulties, the team finished the project on time.', answer:'Despite the difficulties, the team finished the project on time.', sk:'Napriek ťažkostiam tím dokončil projekt včas.'},
+    {sentence:'The committee is expected to make a final decision next week.', answer:'The committee is expected to make a final decision next week.', sk:'Očakáva sa, že výbor urobí konečné rozhodnutie budúci týždeň.'},
+    {sentence:'Scientists have discovered a new species living deep in the ocean.', answer:'Scientists have discovered a new species living deep in the ocean.', sk:'Vedci objavili nový druh žijúci hlboko v oceáne.'},
   ]},
   {id:'finale', zone:'letisko', icon:'👑', title:'Finále — najťažšie slovo', type:'finale', pointValue:5, questions:[
     {
@@ -920,9 +1098,31 @@ const DESTINATIONS = {
       {sk:'Dovidenia', options:['Adiós','Hola','Gracias','Perdón'], answer:0},
     ]},
   ]},
+  it: { code:'it', flag:'<span class="flag-chip flag-it"></span>', name:'Taliansko', stops:[
+    {id:'it-kaviaren', icon:'☕', title:'Kaviareň v Ríme', questions:[
+      {sk:'Káva', options:['Caffè','Tè','Latte','Acqua'], answer:0},
+      {sk:'Účet, prosím', options:['Il conto, per favore','Il menù, per favore','Un caffè, per favore','Grazie mille'], answer:0},
+      {sk:'Chutné', options:['Delizioso','Terribile','Caro','Freddo'], answer:0},
+      {sk:'Čašník', options:['Cameriere','Cliente','Cuoco','Amico'], answer:0},
+      {sk:'Stôl pre dvoch', options:['Un tavolo per due','Un caffè per due','Un conto per due','Un menù per due'], answer:0},
+      {sk:'Cukor', options:['Zucchero','Sale','Latte','Limone'], answer:0},
+      {sk:'Ďakujem', options:['Grazie','Buongiorno','Scusa','Per favore'], answer:0},
+      {sk:'Koľko to stojí?', options:['Quanto costa?','Dov\'è?','Che ore sono?','Come stai?'], answer:0},
+    ]},
+    {id:'it-ulica', icon:'🚸', title:'Ulica a ľudia', questions:[
+      {sk:'Ahoj', options:['Ciao','Arrivederci','Grazie','Scusa'], answer:0},
+      {sk:'Dovidenia', options:['Arrivederci','Ciao','Grazie','Per favore'], answer:0},
+      {sk:'Ako sa voláš?', options:['Come ti chiami?','Come stai?','Quanti anni hai?','Di dove sei?'], answer:0},
+      {sk:'Ako sa máš?', options:['Come stai?','Come ti chiami?','Dove abiti?','Cosa fai?'], answer:0},
+      {sk:'Priateľ', options:['Amico','Nemico','Vicino','Ospite'], answer:0},
+      {sk:'Ulica', options:['Via','Piazza','Parco','Ponte'], answer:0},
+      {sk:'Kde je...?', options:["Dov'è...?",'Cosa...?','Quando...?','Perché...?'], answer:0},
+      {sk:'Pomoc!', options:['Aiuto!','Ciao!','Fermo!','Attenzione!'], answer:0},
+    ]},
+  ]},
 };
 
-const DEST_COLORS = {ru:'#c9564d', fr:'#4169b0', es:'#c9a227'};
+const DEST_COLORS = {ru:'#c9564d', fr:'#4169b0', es:'#c9a227', it:'#2e7d4f'};
 function destTotal(code){ return DESTINATIONS[code].stops.reduce((sum,s)=>sum+s.questions.length,0); }
 function journeyProgressPct(p){
   if(p.destination){
@@ -980,6 +1180,7 @@ function defaultProgress(email){
     destination:null, destStopIdx:0, destQIdx:0, destScore:0, destFinished:false,
     stopStats:{},
     testQueue:null, testIdx:0,
+    streak:0, bestStreak:0, badges:[],
   };
 }
 function rankScore(p){
@@ -1175,12 +1376,17 @@ function continueJourney(){
 
   if(progress.qIdx < stop.questions.length-1){
     progress.qIdx++;
-  } else if(progress.stopIdx < MAP_STOPS.length-1){
-    progress.stopIdx++;
-    progress.qIdx = 0;
   } else {
-    progress.reachedAirport = true;
+    if(stop === MAP_STOPS[0]) awardBadge('prvykrok');
+    if(st.correct === st.total) awardBadge('bezchyby');
+    if(progress.stopIdx < MAP_STOPS.length-1){
+      progress.stopIdx++;
+      progress.qIdx = 0;
+    } else {
+      progress.reachedAirport = true;
+    }
   }
+  checkBadges();
   resetAnswerUi();
   saveProgress();
   render();
@@ -1215,6 +1421,7 @@ function continueDestJourney(){
     progress.destFinished = true;
     progress.finished = true;
   }
+  checkBadges();
   resetAnswerUi();
   saveProgress();
   if(progress.finished){ ui.screen = 'finish'; }
@@ -1290,6 +1497,10 @@ function renderTextBody(type, q, pv){
     promptHtml = `<p class="prompt-sk">Anglická hádanka</p><p class="sentence">${esc(q.riddle)}</p>`;
   } else if(type==='scramble'){
     promptHtml = `<p class="prompt-sk">Rozlúšti popletené písmenká${q.sk?` (${esc(q.sk)})`:''}</p><p class="scramble-word">${esc(q.scrambled.toUpperCase().split('').join(' '))}</p>`;
+  } else if(type==='listen'){
+    promptHtml = `<p class="prompt-sk">Vypočuj si a napíš, čo počuješ</p>
+      <button type="button" class="btn btn-gold" style="margin:4px auto 2px;" onclick="app.speakCurrent()">🔊 Prehrať nahrávku</button>
+      <p class="hint" style="margin:10px 0 0;">Môžeš si to prehrať aj viackrát.</p>`;
   } else {
     promptHtml = `<p class="prompt-sk">Čo to znamená po anglicky?</p><p class="prompt-main emoji">${q.emoji}</p>`;
   }
@@ -1348,6 +1559,7 @@ function renderTopnav(){
     <button class="btn btn-sm" onclick="app.goPlay()">▶️ Hrať</button>
     ${progress ? `<button class="btn btn-sm" onclick="app.openMap()">🗺️ Mapa</button>` : ''}
     <button class="btn btn-sm" onclick="app.openLeaderboard()">🏆 Rebríček</button>
+    <button class="btn btn-sm" onclick="app.toggleSound()" title="${isSoundOn()?'Vypnúť zvuk':'Zapnúť zvuk'}">${isSoundOn()?'🔊':'🔇'}</button>
     ${isGuest ? `<button class="btn btn-sm btn-gold" onclick="app.doSignOut()">✉️ Prihlásiť sa a uložiť postup</button>` : `<button class="btn btn-sm" onclick="app.doSignOut()">Odhlásiť sa</button>`}
   `;
 }
@@ -1464,7 +1676,24 @@ function renderZoneSteps(){
   `;
 }
 
-function revealJourney(){ ui.revealed = true; render(); }
+function revealJourney(){
+  const { q, type } = getCurrentQuestion();
+  const correct = isAnswerCorrect(type, q);
+  playSound(correct ? 'correct' : 'wrong');
+  if(correct){
+    progress.streak = (progress.streak||0)+1;
+    if(progress.streak > (progress.bestStreak||0)) progress.bestStreak = progress.streak;
+    if(progress.streak>=5 && progress.streak%5===0){
+      if(progress.destination) progress.destScore += 1; else progress.score += 1;
+      showToast(`🔥 Séria ${progress.streak}! +1 bod navyše`, 'badge');
+    }
+  } else {
+    progress.streak = 0;
+  }
+  checkBadges();
+  ui.revealed = true;
+  render();
+}
 function setTextAnswer(v){ ui.textAnswer = v; }
 
 function renderStage(){
@@ -1499,6 +1728,7 @@ function renderStage(){
       <span class="pill">Otázka ${idx+1} / ${total}</span>
       <span class="pill">Skóre: ${curScore} / ${maxScore}</span>
       <span class="pill">Celkový postup: ${overallPct}%</span>
+      ${progress.streak>=2 ? `<span class="pill pill-streak">🔥 Séria: ${progress.streak}</span>` : ''}
     </div>
     <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
     <div class="panel stage-card" style="margin-top:16px;">
@@ -1536,12 +1766,25 @@ function renderDestChoice(){
     </div>
   `;
 }
+function renderBadgesRow(){
+  const ids = progress && progress.badges ? progress.badges : [];
+  if(!ids.length) return '';
+  return `
+    <div class="badges-row">
+      ${ids.map(id=>{
+        const b = BADGES[id]; if(!b) return '';
+        return `<span class="badge-chip" title="${esc(b.desc)}">${b.icon} ${esc(b.label)}</span>`;
+      }).join('')}
+    </div>
+  `;
+}
 function renderFinish(){
   return `
     <div class="panel finish-wrap">
       <div class="intro-icon" style="margin:0 auto;">🏆</div>
       <h2 class="section-title" style="margin-top:16px;">Cesta dokončená!</h2>
       <p class="hint">Angličtina: <b>${progress.score} / ${MAP_TOTAL}</b>${progress.destination?`, ${DESTINATIONS[progress.destination].name}: <b>${progress.destScore} / ${destTotal(progress.destination)}</b>`:''}</p>
+      ${renderBadgesRow()}
       <div class="controls">
         <button class="btn btn-gold" style="padding:14px 30px;font-size:16px;" onclick="app.showDiploma()">🎓 Zobraziť diplom</button>
         <button class="btn" style="padding:14px 30px;font-size:16px;" onclick="app.openLeaderboard()">Pozrieť rebríček 🏆</button>
@@ -1549,7 +1792,7 @@ function renderFinish(){
     </div>
   `;
 }
-function showDiploma(){ ui.screen='diploma'; render(); }
+function showDiploma(){ ui.screen='diploma'; render(); burstConfetti(); }
 function backToEnd(){ ui.screen='finish'; render(); }
 function renderDiploma(){
   const name = progress.displayName || 'Hráč';
@@ -1570,6 +1813,7 @@ function renderDiploma(){
           <span class="dip-score">${progress.score} / ${MAP_TOTAL} bodov</span>.
           ${destLine}
         </div>
+        ${renderBadgesRow()}
         <div class="diploma-foot">
           <div class="date">${dateStr}</div>
           <div class="sig">Teacher Quiz Online<span class="sig-label">Systém</span></div>
@@ -1806,6 +2050,7 @@ window.app = {
   startJourney, revealJourney, setTextAnswer, pickOrderWord, unpickOrderWord, continueStageAuto,
   chooseDestination, declineDestination, openLeaderboard, goPlay, doSignOut,
   openMap, closeMap, showDiploma, backToEnd, openZoneDetail, closePinDetail,
+  toggleSound, speakCurrent,
   __testFirestore: async ()=>{
     try{
       const ref = doc(db, 'progress', 'connectivity-test');
