@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
 <title>Teacher Quiz Online</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AD%3C/text%3E%3C/svg%3E">
+<meta name="description" content="Teacher Quiz Online — uč sa angličtinu vlastným tempom, odkiaľkoľvek a kedykoľvek.">
+<meta name="theme-color" content="#3d5d78">
 <style>
   :root{
     --bg:#e8dcb8; --bg-2:#efe3c8; --panel:#f7f0dc; --panel-2:#efe2c0;
@@ -11,7 +14,7 @@
     --parchment:#f3e8cf; --parchment-ink:#3a2c14; --parchment-line:#c9b487;
     --correct:#4f7a45; --correct-bg:rgba(79,122,69,.14);
     --wrong:#b3453a; --wrong-bg:rgba(179,69,58,.14);
-    --locked:#c2af86; --text:#3a2f22; --text-muted:#7a6a4e; --border:#cbb488;
+    --locked:#c2af86; --text:#3a2f22; --text-muted:#6b5a3e; --border:#cbb488;
     --sea:#7fa3ac; --twine:#a6875a;
     --font-display:Georgia,'Times New Roman',serif;
     --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
@@ -69,6 +72,10 @@
     font-family:var(--font-display);font-weight:700;font-size:11px;color:#1a1200;border:1.5px solid #fdfaf0;
     box-shadow:0 1px 3px rgba(58,47,34,.3);flex:none;
   }
+  .topnav .who-avatar-img{
+    width:26px;height:26px;border-radius:50%;object-fit:cover;flex:none;
+    border:1.5px solid #fdfaf0;box-shadow:0 1px 3px rgba(58,47,34,.3);
+  }
 
   .panel{
     background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:32px;
@@ -84,21 +91,29 @@
   .btn{
     position:relative;min-height:44px;border-radius:6px;border:1.5px solid var(--border);background:var(--panel-2);color:var(--text);
     padding:12px 18px;font-size:14.5px;font-weight:600;font-family:var(--font-body);
-    transition:transform .08s ease, background .15s ease, border-color .15s ease;
+    transition:transform .12s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
     box-shadow:1.5px 1.5px 0 rgba(58,47,34,.18);
   }
-  .btn:hover{border-color:var(--gold);}
+  .btn:hover{border-color:var(--gold);transform:translateY(-1px);box-shadow:1.5px 2.5px 0 rgba(58,47,34,.2);}
   .btn:active{transform:translate(1px,1px);box-shadow:0 0 0 rgba(58,47,34,.18);}
   .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-  .btn:disabled:hover{border-color:var(--border);}
+  .btn:disabled:hover{border-color:var(--border);box-shadow:1.5px 1.5px 0 rgba(58,47,34,.18);}
   .btn-gold{
     background:var(--gold);color:#fdfaf0;border:1.5px solid var(--gold-dim);font-family:var(--font-display);
     text-transform:uppercase;letter-spacing:.04em;font-weight:700;box-shadow:2px 2px 0 var(--gold-dim);
   }
-  .btn-gold:hover{background:var(--gold-dim);}
+  .btn-gold:hover{background:var(--gold-dim);box-shadow:2px 3px 0 var(--gold-dim);}
   .btn-gold:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--gold-dim);}
   .btn-gold:disabled{opacity:.45;cursor:not-allowed;transform:none;background:var(--panel-2);color:var(--text-muted);box-shadow:none;border-color:var(--border);}
   .btn-sm{padding:8px 12px;font-size:12.5px;min-height:38px;}
+  .btn-google{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    background:#fff;color:#3c4043;border:1.5px solid #dadce0;font-family:var(--font-body);font-weight:600;
+    box-shadow:1.5px 1.5px 0 rgba(58,47,34,.12);
+  }
+  .btn-google:hover{border-color:#c6c9cd;background:#f8f9fa;box-shadow:1.5px 2.5px 0 rgba(58,47,34,.14);}
+  .btn-google:active{transform:translate(1px,1px);}
+  .btn-google:disabled{opacity:.6;}
 
   .field{margin-bottom:16px;}
   .field label{display:block;font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;}
@@ -107,10 +122,13 @@
     border-radius:10px;padding:12px 14px;font-size:15px;transition:border-color .15s ease, box-shadow .15s ease;
   }
   .field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(61,93,120,.18);}
-  .msg{border-radius:8px;padding:12px 16px;font-size:14px;margin-bottom:16px;}
+  .msg{border-radius:8px;padding:12px 16px;font-size:14px;margin-bottom:16px;text-align:left;}
   .msg.info{background:var(--panel-2);border:1px dashed var(--border);color:var(--text);}
   .msg.error{background:var(--wrong-bg);border:1px solid var(--wrong);color:var(--wrong);}
   .msg.ok{background:var(--correct-bg);border:1px solid var(--correct);color:var(--correct);}
+  .msg.error::before{content:'⚠️ ';}
+  .msg.ok::before{content:'✅ ';}
+  .msg.info::before{content:'ℹ️ ';}
 
   .or-divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;}
   .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border);}
@@ -128,7 +146,7 @@
   .threshold-note b{color:var(--gold);}
 
   .progress-track{background:var(--panel-2);border-radius:99px;height:8px;overflow:hidden;width:100%;margin-top:10px;}
-  .progress-fill{background:var(--gold);height:100%;border-radius:99px;transition:width .25s ease;}
+  .progress-fill{background:linear-gradient(90deg, var(--gold-dim), var(--gold));height:100%;border-radius:99px;transition:width .3s ease;}
   .qmeta{font-size:13px;color:var(--text-muted);display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
   .qmeta .pill{background:var(--panel-2);border:1px solid var(--gold);padding:4px 10px;border-radius:99px;}
 
@@ -467,7 +485,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
   onAuthStateChanged, signOut, signInAnonymously
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
@@ -478,7 +496,9 @@ import { firebaseConfig } from "./firebase-config.js";
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const EMAIL_KEY = 'tq_email_for_signin';
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+const GOOGLE_G_SVG = `<svg viewBox="0 0 48 48" width="19" height="19" aria-hidden="true" focusable="false"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>`;
 
 /* ================= question data (rovnaké ako v lokálnej verzii) ================= */
 const PASS_THRESHOLD = 10;
@@ -988,7 +1008,7 @@ function locationLabel(p){
 /* ================= app state ================= */
 let currentUser = null;
 let progress = null;   // firestore-backed progress doc (mirrors defaultProgress shape)
-let ui = { screen:'loading', revealed:false, pickedOption:null, textAnswer:'', orderPicks:[], nameInput:'', emailInput:'', authMsg:null, busy:false, mapReturnScreen:'stage', pinDetail:null };
+let ui = { screen:'loading', revealed:false, pickedOption:null, textAnswer:'', orderPicks:[], nameInput:'', authMsg:null, busy:false, mapReturnScreen:'stage', pinDetail:null };
 
 async function saveProgress(){
   if(!currentUser || !progress || currentUser.isAnonymous) return;
@@ -1002,23 +1022,15 @@ async function saveProgress(){
 
 /* ================= auth ================= */
 async function handleAuthEntry(){
-  if(isSignInWithEmailLink(auth, window.location.href)){
-    let email = window.localStorage.getItem(EMAIL_KEY);
-    if(!email){
-      email = window.prompt('Pre potvrdenie prihlásenia zadaj svoj email:');
-    }
-    try{
-      await signInWithEmailLink(auth, email, window.location.href);
-      window.localStorage.removeItem(EMAIL_KEY);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }catch(e){
-      ui.authMsg = { type:'error', text:'Prihlásenie zlyhalo: '+e.message };
-    }
+  try{
+    await getRedirectResult(auth);
+  }catch(e){
+    ui.authMsg = { type:'error', text:'Prihlásenie zlyhalo: '+e.message };
   }
   onAuthStateChanged(auth, async (user)=>{
     currentUser = user;
     if(user && user.isAnonymous){
-      // guest: no email given, nothing ever read from or written to Firestore
+      // guest: nothing ever read from or written to Firestore
       progress = defaultProgress('');
       ui.screen = 'nickname';
     } else if(user){
@@ -1041,28 +1053,30 @@ async function handleAuthEntry(){
       progress = null;
       ui.screen = 'login';
     }
+    if(ui.screen==='nickname' && !ui.nameInput && user && !user.isAnonymous && user.displayName){
+      ui.nameInput = user.displayName.slice(0,24);
+    }
     render();
   });
 }
 
-async function sendLoginLink(){
+async function signInWithGoogle(){
   if(ui.busy) return;
-  const email = ui.emailInput.trim();
-  if(!email || !email.includes('@')){ ui.authMsg = {type:'error', text:'Zadaj platný email.'}; render(); return; }
-  const actionCodeSettings = { url: window.location.href.split('?')[0], handleCodeInApp: true };
-  ui.busy = true; render();
+  ui.busy = true; ui.authMsg = null; render();
   try{
-    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-    window.localStorage.setItem(EMAIL_KEY, email);
-    ui.screen = 'checkEmail';
-    ui.authMsg = null;
+    await signInWithPopup(auth, googleProvider);
   }catch(e){
-    ui.authMsg = {type:'error', text:'Nepodarilo sa odoslať odkaz: '+e.message};
+    const code = e && e.code;
+    if(code==='auth/popup-blocked' || code==='auth/cancelled-popup-request' || code==='auth/operation-not-supported-in-this-environment'){
+      try{ await signInWithRedirect(auth, googleProvider); return; }
+      catch(e2){ ui.authMsg = { type:'error', text:'Prihlásenie zlyhalo: '+e2.message }; }
+    } else if(code!=='auth/popup-closed-by-user' && code!=='auth/cancelled-popup-request'){
+      ui.authMsg = { type:'error', text:'Prihlásenie zlyhalo: '+e.message };
+    }
   }
   ui.busy = false;
   render();
 }
-function backToLogin(){ ui.screen = 'login'; ui.authMsg = null; render(); }
 async function playAsGuest(){
   if(ui.busy) return;
   ui.busy = true; render();
@@ -1322,10 +1336,13 @@ function renderTopnav(){
   const nav = document.getElementById('topnav');
   if(!currentUser){ nav.innerHTML = ''; return; }
   const isGuest = currentUser.isAnonymous;
-  const name = progress && progress.displayName ? progress.displayName : (isGuest ? 'Hosť' : currentUser.email);
+  const name = progress && progress.displayName ? progress.displayName : (isGuest ? 'Hosť' : (currentUser.displayName || currentUser.email));
+  const avatarHtml = (!isGuest && currentUser.photoURL)
+    ? `<img class="who-avatar-img" src="${esc(currentUser.photoURL)}" alt="" referrerpolicy="no-referrer">`
+    : `<span class="who-avatar" style="background:${avatarColor(currentUser.uid)};">${initials(name)}</span>`;
   nav.innerHTML = `
     <span class="who">
-      <span class="who-avatar" style="background:${avatarColor(currentUser.uid)};">${initials(name)}</span>
+      ${avatarHtml}
       <b>${esc(name)}</b>${isGuest ? ' <span style="opacity:.75;">(hosť — postup sa neuloží)</span>' : ''}
     </span>
     <button class="btn btn-sm" onclick="app.goPlay()">▶️ Hrať</button>
@@ -1341,29 +1358,17 @@ function goPlay(){
 
 function renderLogin(){
   return `
-    <div class="panel">
-      <div class="intro-icon" style="margin:0 auto 18px;">🗺️</div>
-      <h2 class="section-title" style="text-align:center;">Prihlásenie</h2>
-      <p class="hint" style="text-align:center;">Zadaj svoj email — pošleme ti prihlasovací odkaz. Žiadne heslo netreba.</p>
-      ${ui.authMsg ? `<div class="msg ${ui.authMsg.type}">${esc(ui.authMsg.text)}</div>` : ''}
-      <div class="field">
-        <label>Email</label>
-        <input type="email" placeholder="tvoj@email.sk" value="${esc(ui.emailInput)}" oninput="app.setEmailInput(this.value)" onkeydown="if(event.key==='Enter') app.sendLoginLink();" />
-      </div>
-      <button class="btn btn-gold" style="width:100%;" ${ui.busy?'disabled':''} onclick="app.sendLoginLink()">${ui.busy?'Odosielam…':'Poslať prihlasovací odkaz ✉️'}</button>
-      <div class="or-divider"><span>alebo</span></div>
-      <button class="btn" style="width:100%;" ${ui.busy?'disabled':''} onclick="app.playAsGuest()">▶ Vyskúšať hru bez prihlásenia</button>
-      <p class="hint" style="text-align:center;margin:10px 0 0;font-size:12.5px;">Ako hosť si zahráš hneď, ale tvoj postup sa neuloží ani nebude v rebríčku. Email treba len na uloženie a porovnanie s ostatnými.</p>
-    </div>
-  `;
-}
-function renderCheckEmail(){
-  return `
     <div class="panel intro-wrap">
-      <div class="intro-icon">📬</div>
-      <h2>Skontroluj si email</h2>
-      <p>Poslali sme odkaz na prihlásenie na <b>${esc(ui.emailInput)}</b>. Klikni naň (na tomto istom zariadení) a budeš prihlásený/á.</p>
-      <button class="btn" onclick="app.backToLogin()">← Zadať iný email</button>
+      <div class="intro-icon">🗺️</div>
+      <h2>Vitaj na ceste za angličtinou</h2>
+      <p>Prihlás sa cez Google — tvoj postup sa uloží a uvidíš sa v rebríčku.</p>
+      ${ui.authMsg ? `<div class="msg ${ui.authMsg.type}" style="width:100%;max-width:320px;">${esc(ui.authMsg.text)}</div>` : ''}
+      <button class="btn btn-google" style="width:100%;max-width:320px;" ${ui.busy?'disabled':''} onclick="app.signInWithGoogle()">
+        ${GOOGLE_G_SVG}<span>${ui.busy?'Prihlasujem…':'Prihlásiť sa cez Google'}</span>
+      </button>
+      <div class="or-divider" style="width:100%;max-width:320px;"><span>alebo</span></div>
+      <button class="btn" style="width:100%;max-width:320px;" ${ui.busy?'disabled':''} onclick="app.playAsGuest()">▶ Vyskúšať hru bez prihlásenia</button>
+      <p class="hint" style="font-size:12.5px;">Ako hosť si zahráš hneď, ale tvoj postup sa neuloží ani nebude v rebríčku.</p>
     </div>
   `;
 }
@@ -1781,7 +1786,6 @@ function render(){
   let html = '';
   if(ui.screen==='loading') html = `<div class="panel intro-wrap"><p>Načítavam…</p></div>`;
   else if(ui.screen==='login') html = renderLogin();
-  else if(ui.screen==='checkEmail') html = renderCheckEmail();
   else if(ui.screen==='nickname') html = renderNickname();
   else if(ui.screen==='testIntro') html = renderTestIntro();
   else if(ui.screen==='testPlay') html = renderTestPlay();
@@ -1797,9 +1801,8 @@ function render(){
 
 /* ================= expose to window (onclick handlers) ================= */
 window.app = {
-  setEmailInput:(v)=>{ ui.emailInput=v; },
   setNameInput:(v)=>{ ui.nameInput=v; },
-  sendLoginLink, playAsGuest, backToLogin, saveNickname, beginTest, pickOption, revealTestQ, continueTest,
+  signInWithGoogle, playAsGuest, saveNickname, beginTest, pickOption, revealTestQ, continueTest,
   startJourney, revealJourney, setTextAnswer, pickOrderWord, unpickOrderWord, continueStageAuto,
   chooseDestination, declineDestination, openLeaderboard, goPlay, doSignOut,
   openMap, closeMap, showDiploma, backToEnd, openZoneDetail, closePinDetail,
