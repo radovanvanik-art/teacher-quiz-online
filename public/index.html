@@ -1,0 +1,1818 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Teacher Quiz Online</title>
+<style>
+  :root{
+    --bg:#e8dcb8; --bg-2:#efe3c8; --panel:#f7f0dc; --panel-2:#efe2c0;
+    --gold:#3d5d78; --gold-dim:#2c4759; --gold-diploma:#a67c3d;
+    --parchment:#f3e8cf; --parchment-ink:#3a2c14; --parchment-line:#c9b487;
+    --correct:#4f7a45; --correct-bg:rgba(79,122,69,.14);
+    --wrong:#b3453a; --wrong-bg:rgba(179,69,58,.14);
+    --locked:#c2af86; --text:#3a2f22; --text-muted:#7a6a4e; --border:#cbb488;
+    --sea:#7fa3ac; --twine:#a6875a;
+    --font-display:Georgia,'Times New Roman',serif;
+    --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+    --font-hand:'Segoe Script','Bradley Hand','Comic Sans MS',cursive;
+    --font-num:'Consolas','SF Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      repeating-linear-gradient(rgba(58,47,34,.045) 0 1px, transparent 1px 28px),
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255,255,255,.55), transparent 60%),
+      radial-gradient(ellipse 800px 550px at 100% 110%, rgba(58,47,34,.07), transparent 60%),
+      var(--bg-2);
+    color:var(--text); font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    display:flex; justify-content:center; padding:32px 20px 60px;
+  }
+  .wrap{width:100%;max-width:900px;}
+  button{font-family:inherit;cursor:pointer;touch-action:manipulation;-webkit-appearance:none;appearance:none;}
+  input{font-family:inherit;}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  ::selection{background:var(--gold);color:#fdfaf0;}
+
+  .brand{text-align:center;margin-bottom:22px;}
+  .bulbs{
+    height:10px;max-width:420px;margin:0 auto 14px;
+    background-image:radial-gradient(circle, var(--gold-dim) 0 2.5px, transparent 3px);
+    background-size:24px 10px;background-repeat:repeat-x;background-position:center;opacity:.45;
+  }
+  .brand h1{
+    display:inline-block;font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    font-size:clamp(26px,5vw,42px);margin:0;text-wrap:balance;
+    color:var(--wrong);transform:rotate(-1.3deg);
+    text-shadow:1.5px 1.5px 0 rgba(58,47,34,.18), -0.5px -0.5px 0 rgba(179,69,58,.25);
+    animation:heroIn .6s ease both;
+  }
+  @keyframes heroIn{ from{opacity:0; transform:rotate(-1.3deg) translateY(-8px) scale(.97);} to{opacity:1; transform:rotate(-1.3deg) translateY(0) scale(1);} }
+  .brand .compass{font-size:.85em;vertical-align:-4px;margin-right:4px;display:inline-block;filter:drop-shadow(1px 2px 0 rgba(58,47,34,.25));animation:compassSpin 8s linear infinite;}
+  @keyframes compassSpin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .brand .sub{margin:8px 0 0;color:var(--text-muted);font-size:16px;font-family:var(--font-hand);font-style:italic;}
+
+  .topnav{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 22px;
+    background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;
+    box-shadow:0 4px 10px rgba(58,47,34,.12);
+  }
+  .topnav:empty{display:none;}
+  .topnav .who{font-size:12.5px;color:var(--text-muted);margin-right:auto;display:flex;align-items:center;gap:8px;}
+  .topnav .who b{color:var(--text);}
+  .topnav .who-avatar{
+    width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-weight:700;font-size:11px;color:#1a1200;border:1.5px solid #fdfaf0;
+    box-shadow:0 1px 3px rgba(58,47,34,.3);flex:none;
+  }
+
+  .panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:32px;
+    box-shadow:0 14px 30px rgba(58,47,34,.16), 0 2px 0 rgba(255,255,255,.5) inset;
+    animation:cardIn .3s ease both;
+  }
+  @keyframes cardIn{ from{opacity:0; transform:translateY(8px) scale(.985);} to{opacity:1; transform:translateY(0) scale(1);} }
+  @media (max-width:600px){ .panel{padding:20px 16px;border-radius:8px;} body{padding:18px 12px 40px;} }
+
+  h2.section-title{font-family:var(--font-display);font-weight:700;font-size:23px;margin:0 0 4px;color:var(--text);}
+  p.hint{color:var(--text-muted);font-size:14.5px;line-height:1.55;margin:0 0 20px;}
+
+  .btn{
+    position:relative;min-height:44px;border-radius:6px;border:1.5px solid var(--border);background:var(--panel-2);color:var(--text);
+    padding:12px 18px;font-size:14.5px;font-weight:600;font-family:var(--font-body);
+    transition:transform .08s ease, background .15s ease, border-color .15s ease;
+    box-shadow:1.5px 1.5px 0 rgba(58,47,34,.18);
+  }
+  .btn:hover{border-color:var(--gold);}
+  .btn:active{transform:translate(1px,1px);box-shadow:0 0 0 rgba(58,47,34,.18);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .btn:disabled:hover{border-color:var(--border);}
+  .btn-gold{
+    background:var(--gold);color:#fdfaf0;border:1.5px solid var(--gold-dim);font-family:var(--font-display);
+    text-transform:uppercase;letter-spacing:.04em;font-weight:700;box-shadow:2px 2px 0 var(--gold-dim);
+  }
+  .btn-gold:hover{background:var(--gold-dim);}
+  .btn-gold:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--gold-dim);}
+  .btn-gold:disabled{opacity:.45;cursor:not-allowed;transform:none;background:var(--panel-2);color:var(--text-muted);box-shadow:none;border-color:var(--border);}
+  .btn-sm{padding:8px 12px;font-size:12.5px;min-height:38px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;}
+  .field input{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:10px;padding:12px 14px;font-size:15px;transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(61,93,120,.18);}
+  .msg{border-radius:8px;padding:12px 16px;font-size:14px;margin-bottom:16px;}
+  .msg.info{background:var(--panel-2);border:1px dashed var(--border);color:var(--text);}
+  .msg.error{background:var(--wrong-bg);border:1px solid var(--wrong);color:var(--wrong);}
+  .msg.ok{background:var(--correct-bg);border:1px solid var(--correct);color:var(--correct);}
+
+  .or-divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;}
+  .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+  .intro-wrap{display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 20px;gap:14px;}
+  .intro-icon{
+    font-size:38px;width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse 80% 80% at 32% 26%, rgba(255,255,255,.85), var(--panel-2) 65%);
+    border:3px solid var(--gold);
+    box-shadow:0 10px 22px rgba(58,47,34,.25), inset 0 2px 5px rgba(255,255,255,.6), inset 0 -6px 10px rgba(58,47,34,.08);
+  }
+  .intro-wrap h2{font-family:var(--font-display);font-weight:700;font-size:clamp(22px,4.6vw,32px);margin:0;text-wrap:balance;}
+  .intro-wrap p{color:var(--text-muted);max-width:480px;font-size:15.5px;line-height:1.6;}
+  .threshold-note{background:var(--panel-2);border:1px dashed var(--border);border-radius:8px;padding:10px 18px;font-size:13.5px;}
+  .threshold-note b{color:var(--gold);}
+
+  .progress-track{background:var(--panel-2);border-radius:99px;height:8px;overflow:hidden;width:100%;margin-top:10px;}
+  .progress-fill{background:var(--gold);height:100%;border-radius:99px;transition:width .25s ease;}
+  .qmeta{font-size:13px;color:var(--text-muted);display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .qmeta .pill{background:var(--panel-2);border:1px solid var(--gold);padding:4px 10px;border-radius:99px;}
+
+  .stage-card{text-align:center;padding:44px 32px;position:relative;}
+  @media (max-width:600px){.stage-card{padding:32px 18px;}}
+  .stage-zone-badge{
+    width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;
+    margin:0 auto 14px;background:
+      radial-gradient(ellipse 90% 130% at 30% 20%, rgba(255,255,255,.5), transparent 60%),
+      var(--zc,var(--gold));
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.12), inset 0 2px 4px rgba(255,255,255,.3), 0 4px 10px rgba(58,47,34,.25);
+  }
+  .prompt-sk{color:var(--text-muted);font-size:13.5px;text-transform:uppercase;letter-spacing:.1em;margin:0 0 14px;}
+  .prompt-main{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,5.4vw,48px);margin:0 0 8px;text-wrap:balance;line-height:1.1;}
+  .prompt-main.emoji{font-size:clamp(56px,11vw,96px);line-height:1;filter:drop-shadow(0 4px 6px rgba(58,47,34,.25));}
+  .sentence{font-family:var(--font-display);font-weight:700;font-size:clamp(19px,3.2vw,26px);line-height:1.4;text-wrap:balance;}
+  .sentence .blank{display:inline-block;min-width:70px;border-bottom:3px solid var(--gold);color:var(--gold);}
+
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:26px 0 6px;}
+  @media (max-width:560px){.options{grid-template-columns:1fr;}}
+  .opt{
+    position:relative;display:flex;align-items:center;gap:12px;text-align:left;background:#fdfaf0;
+    border:2px solid var(--border);border-radius:6px;padding:14px 16px;font-size:16px;font-weight:600;color:var(--text);
+    transition:border-color .15s ease, background .15s ease, transform .08s ease;
+    box-shadow:2px 2px 0 rgba(58,47,34,.12); min-height:44px;
+  }
+  .opt .letter{
+    font-family:var(--font-display);font-weight:700;color:#fdfaf0;font-size:13px;background:var(--gold);
+    border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex:none;
+    box-shadow:0 2px 4px rgba(58,47,34,.3);
+  }
+  .opt:hover{border-color:var(--gold);transform:translateY(-1px);}
+  .opt.picked{border-color:var(--gold);background:rgba(61,93,120,.08);}
+  .opt.reveal-correct{border-color:var(--correct);background:var(--correct-bg);}
+  .opt.reveal-correct .letter{background:var(--correct);}
+  .opt.reveal-wrong{border-color:var(--wrong);background:var(--wrong-bg);}
+  .opt.reveal-wrong .letter{background:var(--wrong);}
+  .opt:disabled{cursor:default;}
+  .opt:disabled:hover{transform:none;}
+
+  .reveal-box{margin-top:22px;}
+  .answer-pill{display:inline-flex;flex-direction:column;gap:4px;background:var(--correct-bg);border:2px solid var(--correct);border-radius:8px;padding:14px 26px;}
+  .answer-pill .en{font-family:var(--font-display);font-weight:700;font-size:22px;color:var(--correct);text-transform:uppercase;}
+  .answer-pill .sk{font-size:13px;color:var(--text-muted);font-family:var(--font-hand);font-style:italic;}
+  .controls{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:28px;flex-wrap:wrap;}
+  .auto-result{width:100%;text-align:center;font-family:var(--font-display);font-weight:700;font-size:18px;padding:10px 16px;border-radius:8px;}
+  .auto-result.ok{color:var(--correct);background:var(--correct-bg);border:2px solid var(--correct);}
+  .auto-result.bad{color:var(--wrong);background:var(--wrong-bg);border:2px solid var(--wrong);}
+
+  .results-list{list-style:none;margin:0 auto 26px;padding:0;max-width:420px;}
+  .stat-row{display:flex;justify-content:space-between;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;font-size:14.5px;}
+  .badge{font-family:var(--font-display);font-size:11.5px;letter-spacing:.05em;padding:5px 10px;border-radius:99px;text-transform:uppercase;}
+  .badge.pass{background:var(--correct-bg);color:var(--correct);border:1px solid var(--correct);}
+  .badge.fail{background:var(--wrong-bg);color:var(--wrong);border:1px solid var(--wrong);}
+
+  .dest-choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;width:100%;margin-top:10px;}
+  .dest-choice-card{
+    background:#fdfaf0;border:1px solid var(--border);border-radius:6px;padding:0 14px 18px;text-align:center;overflow:hidden;
+    transition:transform .14s ease, box-shadow .14s ease; box-shadow:0 6px 14px rgba(58,47,34,.2);
+  }
+  .dest-choice-card:hover{transform:translateY(-4px);box-shadow:0 12px 22px rgba(58,47,34,.28);}
+  .dest-choice-card .dtop{height:8px;margin:0 -14px 18px;background:var(--dc,var(--gold));}
+  .dest-choice-card .flag{font-size:34px;filter:drop-shadow(0 3px 3px rgba(58,47,34,.3));}
+  .dest-choice-card .dname{font-weight:700;margin:8px 0 12px;font-family:var(--font-hand);font-size:17px;}
+  .dest-choice-card .btn{width:100%;}
+
+  .journey-path{
+    position:relative;display:flex;justify-content:space-between;align-items:flex-start;
+    margin:18px 0 8px;padding:14px 6px 0;
+  }
+  .journey-path::before{
+    content:'';position:absolute;top:33px;left:5%;right:5%;height:0;
+    border-top:3px dashed var(--twine);opacity:.55;z-index:0;
+  }
+  .jp-node{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:0;}
+  .jp-dot{
+    width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;
+    background:var(--panel-2);border:2.5px solid var(--border);color:var(--text-muted);
+    box-shadow:0 3px 6px rgba(58,47,34,.18);transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .jp-node.done .jp-dot{background:var(--zc,var(--correct));border-color:var(--zc,var(--correct));color:#fff;opacity:.85;}
+  .jp-node.current .jp-dot{
+    background:var(--zc,var(--gold));border-color:#fdfaf0;color:#fff;transform:scale(1.18);
+    box-shadow:0 0 0 3px var(--zc,var(--gold)), 0 6px 14px rgba(58,47,34,.35);
+  }
+  .jp-label{font-size:10px;font-weight:700;color:var(--text-muted);text-align:center;line-height:1.15;max-width:60px;}
+  .jp-node.current .jp-label{color:var(--text);}
+  @media (max-width:600px){
+    .journey-path{padding-top:6px;}
+    .journey-path::before{top:19px;}
+    .jp-dot{width:30px;height:30px;font-size:14px;}
+    .jp-label{display:none;}
+  }
+
+  .finish-wrap{text-align:center;padding:30px 10px;}
+  .finish-wrap .big-score{font-family:var(--font-num);font-size:44px;font-weight:800;color:var(--gold);margin:10px 0;}
+
+  /* leaderboard */
+  .lb-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .lb-row{display:flex;align-items:center;gap:12px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;transition:transform .12s ease;}
+  .lb-row:hover{transform:translateX(2px);}
+  .lb-row.me{border-color:var(--gold);box-shadow:0 0 0 2px rgba(61,93,120,.18);}
+  .lb-row.top3{background:linear-gradient(90deg, rgba(240,178,62,.14), var(--panel-2) 60%);}
+  .lb-rank{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-num);font-size:12px;font-weight:700;background:var(--panel);border:1px solid var(--border);color:var(--text-muted);}
+  .lb-row.rank-1 .lb-rank{background:#f0b23e;color:#fff;border-color:#c98f22;}
+  .lb-row.rank-2 .lb-rank{background:#b9c2c9;color:#fff;border-color:#8f979e;}
+  .lb-row.rank-3 .lb-rank{background:#c98f5c;color:#fff;border-color:#a06d3e;}
+  .lb-avatar{flex:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:13px;color:#1a1200;border:1.5px solid #fdfaf0;box-shadow:0 1px 3px rgba(58,47,34,.3);}
+  .lb-main{flex:1;min-width:0;}
+  .lb-name{font-weight:700;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+  .lb-loc{font-size:12px;color:var(--text-muted);margin-bottom:4px;}
+  .lb-bar{display:block;background:rgba(58,47,34,.1);border-radius:99px;height:5px;overflow:hidden;width:100%;max-width:180px;}
+  .lb-bar-fill{display:block;background:linear-gradient(90deg, var(--gold), var(--gold-dim));height:100%;border-radius:99px;transition:width .4s ease;}
+  .lb-score{font-family:var(--font-num);font-weight:700;font-size:16px;flex:none;}
+  .flag-chip{display:inline-block;width:1.4em;height:1em;border-radius:.15em;box-shadow:0 0 0 1px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.3);vertical-align:middle;flex:none;}
+  .flag-chip.flag-ru{background:linear-gradient(180deg,#fff 0 33%,#0039a6 33% 66%,#d52b1e 66%);}
+  .flag-chip.flag-fr{background:linear-gradient(90deg,#0055a4 0 33%,#fff 33% 66%,#ef4135 66%);}
+  .flag-chip.flag-es{background:linear-gradient(180deg,#aa151b 0 25%,#f1bf00 25% 75%,#aa151b 75%);}
+  .flag-chip.flag-sk{background:linear-gradient(180deg,#fff 0 33%,#0b4ea2 33% 66%,#ee1c25 66%);}
+
+  /* ---------- text-input answers (fill / riddle / emoji / scramble) ---------- */
+  .text-answer-wrap{display:flex;justify-content:center;margin:24px 0 6px;}
+  .text-answer-input{
+    width:100%;max-width:340px;text-align:center;font-size:19px;font-weight:700;font-family:var(--font-body);
+    background:#fdfaf0;border:2px solid var(--border);border-radius:6px;padding:12px 16px;color:var(--text);
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .text-answer-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(61,93,120,.18);}
+  .text-answer-input.ok{border-color:var(--correct);background:var(--correct-bg);color:var(--correct);}
+  .text-answer-input.bad{border-color:var(--wrong);background:var(--wrong-bg);color:var(--wrong);}
+  .scramble-word{
+    font-family:var(--font-num);font-weight:700;letter-spacing:.18em;font-size:clamp(24px,5vw,38px);
+    color:var(--gold);margin:6px 0 0;
+  }
+
+  /* ---------- word-order (sentence building) ---------- */
+  .order-answer-row{
+    display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:52px;align-items:center;
+    margin:20px auto 14px;max-width:520px;padding:10px;border:2px dashed var(--border);border-radius:8px;background:var(--panel-2);
+  }
+  .order-placeholder{color:var(--text-muted);font-size:13.5px;font-style:italic;}
+  .order-chip{
+    font-family:var(--font-body);font-weight:600;font-size:15px;padding:8px 14px;border-radius:6px;
+    border:2px solid var(--border);background:#fdfaf0;color:var(--text);box-shadow:2px 2px 0 rgba(58,47,34,.12);
+    transition:transform .1s ease, opacity .15s ease;
+  }
+  .order-chip.picked{border-color:var(--gold);background:rgba(61,93,120,.08);}
+  .order-chip.bank:disabled{opacity:.35;cursor:not-allowed;}
+  .order-chip:not(:disabled):hover{transform:translateY(-2px);border-color:var(--gold);}
+  .order-bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:520px;margin:0 auto;}
+
+  /* ---------- diploma ---------- */
+  .diploma-page{display:flex;flex-direction:column;align-items:center;gap:22px;}
+  .diploma-card{
+    background:var(--parchment);color:var(--parchment-ink);border-radius:6px;
+    width:100%;max-width:680px;padding:52px 48px 44px;text-align:center;position:relative;
+    border:10px solid var(--parchment);
+    box-shadow:0 0 0 2px var(--gold-diploma), 0 0 0 6px var(--parchment), 0 0 0 8px var(--gold-diploma), 0 20px 60px rgba(0,0,0,.45);
+  }
+  @media (max-width:600px){ .diploma-card{padding:34px 22px 28px;} }
+  .diploma-card .leaf{font-size:30px;opacity:.8;}
+  .diploma-card .leaf.left{transform:scaleX(-1);}
+  .diploma-crest{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:6px;}
+  .diploma-card .dip-eyebrow{font-family:var(--font-display);letter-spacing:.3em;text-transform:uppercase;font-size:12px;color:var(--gold-diploma);margin:0;}
+  .diploma-card h2{font-family:var(--font-display);font-size:clamp(30px,5vw,44px);letter-spacing:.06em;margin:6px 0 18px;}
+  .diploma-card .dip-body{font-family:var(--font-display);font-size:17px;line-height:1.8;max-width:480px;margin:0 auto;}
+  .diploma-card .dip-name{font-size:26px;font-weight:700;display:block;margin:10px 0;border-bottom:1px solid var(--parchment-line);padding-bottom:10px;}
+  .diploma-card .dip-score{font-weight:700;color:var(--gold-diploma);}
+  .diploma-foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:36px;gap:20px;}
+  .diploma-foot .sig{font-family:var(--font-display);font-style:italic;font-size:20px;border-top:1px solid var(--parchment-line);padding-top:6px;min-width:160px;}
+  .diploma-foot .sig-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-diploma);display:block;margin-top:2px;font-family:var(--font-body);}
+  .diploma-foot .date{font-size:13px;color:var(--parchment-ink);opacity:.7;font-family:var(--font-body);}
+  @media print{
+    body *{visibility:hidden;}
+    .diploma-card,.diploma-card *{visibility:visible;}
+    .diploma-card{position:absolute;top:0;left:0;width:100%;box-shadow:none;}
+    .no-print{display:none !important;}
+  }
+
+  /* ---------- map ---------- */
+  .mini-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;}
+  .mini-btn:hover{border-color:var(--gold);}
+
+  .terrain-map-frame{
+    position:relative;padding:10px;border-radius:6px;
+    background:linear-gradient(155deg,#a88a5c,#8a6f47);
+    box-shadow:0 16px 34px rgba(58,47,34,.3), inset 0 0 0 1px rgba(255,255,255,.15);
+  }
+  .terrain-map{
+    position:relative;border-radius:2px;overflow:hidden;aspect-ratio:16/9;width:100%;
+    background:
+      radial-gradient(ellipse 320px 220px at 96% 4%, rgba(127,163,172,.4) 0%, transparent 65%),
+      radial-gradient(ellipse 300px 210px at 3% 96%, rgba(127,163,172,.4) 0%, transparent 65%),
+      radial-gradient(ellipse 520px 420px at 18% 26%, rgba(163,191,160,.45) 0%, transparent 60%),
+      radial-gradient(ellipse 600px 480px at 64% 58%, rgba(163,191,160,.4) 0%, transparent 55%),
+      radial-gradient(ellipse 420px 340px at 40% 84%, rgba(200,181,122,.35) 0%, transparent 60%),
+      radial-gradient(ellipse 460px 320px at 85% 20%, rgba(163,191,160,.35) 0%, transparent 55%),
+      var(--panel);
+    box-shadow: inset 0 0 50px 6px rgba(58,47,34,.12);
+  }
+  @media (max-width:600px){ .terrain-map{aspect-ratio:5/4;} }
+  .terrain-clouds{
+    position:absolute;inset:0;pointer-events:none;opacity:.7;
+    background:
+      radial-gradient(circle at 90% 80%, transparent 0 16px, rgba(139,110,66,.22) 17px, rgba(139,110,66,.22) 19px, transparent 20px),
+      radial-gradient(circle at 7% 18%, transparent 0 11px, rgba(139,110,66,.18) 12px, rgba(139,110,66,.18) 13px, transparent 14px);
+  }
+  .terrain-compass{position:absolute;top:10px;right:12px;font-size:24px;opacity:.75;filter:drop-shadow(1px 2px 0 rgba(58,47,34,.3));z-index:2;}
+  .sk-ribbon{
+    position:absolute;top:10px;left:12px;display:flex;align-items:center;gap:6px;z-index:2;
+    background:rgba(253,250,240,.9);border:1px solid var(--border);border-radius:99px;
+    padding:4px 10px 4px 4px;box-shadow:0 3px 8px rgba(58,47,34,.2);
+  }
+  .sk-ribbon .flag-chip{width:20px;height:14px;}
+  .sk-ribbon span.sr-label{font-size:12px;font-weight:700;color:var(--text);font-family:var(--font-hand);letter-spacing:.01em;}
+  .terrain-svg{position:absolute;inset:0;width:100%;height:100%;}
+  .terrain-path-shadow{fill:none;stroke:rgba(58,47,34,.18);stroke-width:1;stroke-linecap:round;}
+  .terrain-path{fill:none;stroke:var(--twine);stroke-width:.55;stroke-dasharray:.35 1.3;stroke-linecap:round;opacity:1;}
+  .terrain-branch{fill:none;stroke:var(--twine);stroke-width:.45;stroke-dasharray:.35 1.1;opacity:.85;}
+  .terrain-border{fill:none;stroke:rgba(58,47,34,.22);stroke-width:.16;stroke-dasharray:.35 .5;}
+
+  .map-pin{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;z-index:2;}
+  .map-pin-drop{
+    position:relative;width:48px;background:#fdfaf0;padding:4px 4px 9px;border-radius:2px;
+    box-shadow:0 6px 12px rgba(58,47,34,.35), 0 1px 2px rgba(58,47,34,.15);
+    transition:transform .15s ease;
+  }
+  .pin-scallop{
+    position:absolute;top:-8px;left:50%;width:10px;height:10px;border-radius:50%;z-index:1;
+    transform:translateX(-50%);background:radial-gradient(circle at 35% 30%, #d9695c, var(--wrong));
+    box-shadow:0 2px 3px rgba(58,47,34,.4);
+  }
+  .map-pin-emoji{
+    display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1;
+    background:var(--zc,#d9cca0);border-radius:2px;font-size:23px;line-height:1;
+  }
+  .map-pin-shadow{width:20px;height:5px;border-radius:50%;background:rgba(58,47,34,.25);filter:blur(1.4px);margin-top:1px;}
+  .map-pin-label{
+    font-family:var(--font-hand);font-size:12.5px;font-weight:700;color:var(--text);line-height:1.2;
+    background:rgba(253,250,240,.92);padding:2px 7px;border-radius:4px;white-space:nowrap;border:1px solid var(--border);
+  }
+  @media (max-width:600px){
+    .map-pin-drop{width:38px;padding:3px 3px 7px;}
+    .map-pin-emoji{font-size:18px;}
+    .map-pin-label{display:none;}
+  }
+  .map-pin.is-me .map-pin-drop{
+    transform:scale(1.15);box-shadow:0 0 0 3px var(--correct), 0 6px 14px rgba(58,47,34,.4);
+  }
+  .map-pin-avatar{
+    width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:800;color:#1a1200;font-family:var(--font-display);border:1.5px solid #fdfaf0;
+    box-shadow:0 2px 4px rgba(58,47,34,.35);margin-top:2px;
+  }
+
+  .dest-strip-wrap{margin-top:16px;}
+  .dest-strip-title{
+    display:flex;align-items:center;gap:8px;font-family:var(--font-hand);font-weight:700;font-size:14px;
+    color:var(--text-muted);margin:0 0 10px;
+  }
+  .dest-strip-title .arrow{color:var(--gold);font-weight:700;}
+  .dest-strip{display:flex;flex-wrap:wrap;gap:12px;}
+  .dest-badge{
+    display:flex;align-items:center;gap:10px;flex:1 1 160px;text-align:left;
+    background:var(--panel-2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;
+  }
+  .dest-badge.is-me-dest{border-color:var(--correct);box-shadow:0 0 0 2px rgba(79,122,69,.18);}
+  .dest-badge .flag{font-size:26px;filter:drop-shadow(0 2px 2px rgba(58,47,34,.3));flex:none;}
+  .dest-badge .dtext{flex:1;min-width:0;}
+  .dest-badge .dlabel{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.2;font-family:var(--font-hand);}
+  .dest-badge .dstatus{font-size:10.5px;color:var(--gold);font-weight:700;}
+
+  .map-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:12px;color:var(--text-muted);}
+  .map-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1.5px solid var(--gold);background:var(--panel);}
+
+  /* ---------- dedicated map page ---------- */
+  .map-summary{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+  .map-summary-item{
+    flex:1 1 160px;background:var(--panel-2);border:1px solid var(--border);border-radius:10px;
+    padding:10px 16px;display:flex;flex-direction:column;gap:2px;
+  }
+  .map-summary-item .ms-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);font-weight:700;}
+  .map-summary-item .ms-value{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text);}
+  .map-page-frame .terrain-map{aspect-ratio:16/8;}
+  @media (max-width:600px){ .map-page-frame .terrain-map{aspect-ratio:4/5;} }
+  .map-pin{cursor:pointer;}
+  .map-pin-pct{
+    font-family:var(--font-num);font-size:10px;font-weight:700;margin-top:1px;
+    background:rgba(253,250,240,.95);border-radius:99px;padding:1px 6px;border:1px solid var(--border);color:var(--text-muted);
+  }
+  .map-pin-pct.done{color:var(--correct);border-color:var(--correct);}
+  .map-pin-pct.current{color:var(--gold);border-color:var(--gold);}
+  .map-pin-pct.locked{color:var(--text-muted);}
+
+  /* ---------- stop detail popup ---------- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(58,47,34,.55);
+    display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;
+    animation:backdropIn .18s ease both;
+  }
+  @keyframes backdropIn{ from{opacity:0;} to{opacity:1;} }
+  .modal-card{
+    background:var(--panel);border:2px solid var(--gold);border-radius:10px;padding:22px;
+    max-width:480px;width:100%;max-height:85vh;overflow-y:auto;
+    box-shadow:0 30px 60px rgba(58,47,34,.4);animation:cardIn .22s ease both;
+  }
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;}
+  .modal-head h3{font-family:var(--font-display);font-style:italic;letter-spacing:.01em;font-size:19px;margin:0;color:var(--gold);}
+  .stop-detail{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px;}
+  .stop-detail-head{font-weight:700;font-size:14px;margin-bottom:8px;font-family:var(--font-hand);}
+  .stop-detail-pv{color:var(--gold);font-weight:600;font-size:12px;}
+  .stop-detail-bar{background:rgba(58,47,34,.1);border-radius:99px;height:6px;overflow:hidden;margin-bottom:6px;}
+  .stop-detail-fill{height:100%;border-radius:99px;background:var(--gold);transition:width .3s ease;}
+  .stop-detail-fill.done{background:var(--correct);}
+  .stop-detail-fill.locked{background:var(--locked);}
+  .stop-detail-status{font-size:12.5px;color:var(--text-muted);}
+  .stop-detail.locked{opacity:.6;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+  @media (hover:none){ .btn:hover, .opt:hover, .dest-choice-card:hover, .order-chip:hover{transform:none;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="bulbs"></div>
+    <h1><span class="compass">🧭</span>Teacher Quiz Online</h1>
+    <p class="sub">Uč sa angličtinu vlastným tempom — odkiaľkoľvek, kedykoľvek</p>
+  </div>
+  <div id="topnav" class="topnav"></div>
+  <div id="app" aria-live="polite"></div>
+</div>
+<div id="mapOverlay"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
+  onAuthStateChanged, signOut, signInAnonymously
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, collection, query, orderBy, limit, getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { firebaseConfig } from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const EMAIL_KEY = 'tq_email_for_signin';
+
+/* ================= question data (rovnaké ako v lokálnej verzii) ================= */
+const PASS_THRESHOLD = 10;
+const PLAYER_COLORS = ['#f0b23e','#49b47c','#5b9ee0','#e05a45','#c77dff','#4dd0c4','#ff8fab','#d8b4fe'];
+
+const TEST_QUESTIONS = [
+  {sk:'Ahoj', options:['Hello','Goodbye','Please','Sorry'], answer:0},
+  {sk:'Ďakujem', options:['Thank you','Sorry','Please','Welcome'], answer:0},
+  {sk:'Prosím', options:['Please','Thanks','Sorry','Yes'], answer:0},
+  {sk:'Dobré ráno', options:['Good morning','Good night','Good evening','Good afternoon'], answer:0},
+  {sk:'Rodina', options:['Family','Friend','Home','Work'], answer:0},
+  {sk:'Chlieb', options:['Bread','Butter','Milk','Cheese'], answer:0},
+  {sk:'Voda', options:['Water','Wine','Juice','Tea'], answer:0},
+  {sk:'Vlak', options:['Train','Bus','Car','Plane'], answer:0},
+  {sk:'Letisko', options:['Airport','Station','Hotel','Shop'], answer:0},
+  {sk:'Obchod', options:['Shop','School','Office','Hospital'], answer:0},
+  {sk:'Počasie', options:['Weather','Season','Sky','Wind'], answer:0},
+  {sk:'Prší', options:["It's raining","It's snowing","It's sunny","It's windy"], answer:0},
+  {sk:'Práca', options:['Work','Rest','School','Sport'], answer:0},
+  {sk:'Priateľ', options:['Friend','Neighbour','Colleague','Stranger'], answer:0},
+  {sk:'Dom', options:['House','Room','Street','City'], answer:0},
+  {sk:'Peniaze', options:['Money','Card','Wallet','Price'], answer:0},
+];
+
+const ZONES = [
+  {id:'dom', label:'Dom', icon:'🏠', color:'#e8834e', x:9, y:38},
+  {id:'skola', label:'Škola', icon:'🏫', color:'#5b9ee0', x:21, y:16},
+  {id:'kaviaren', label:'Kaviareň a ulica', icon:'☕', color:'#c9915a', x:33, y:40},
+  {id:'mesto', label:'Mesto', icon:'🏙️', color:'#d868a0', x:45, y:15},
+  {id:'kancelaria', label:'Kancelária', icon:'🏢', color:'#7b8cde', x:57, y:38},
+  {id:'nemocnica', label:'Nemocnica', icon:'🏥', color:'#e0625b', x:68, y:15},
+  {id:'hlavnemesto', label:'Hlavné mesto', icon:'🏛️', color:'#a878e0', x:79, y:35},
+  {id:'letisko', label:'Letisko', icon:'✈️', color:'#4dd0c4', x:90, y:16},
+];
+const TERRAIN_PATH = "M9,38 C14,22 17,13 21,16 C25,19 28,37 33,40 C38,43 41,20 45,15 C49,10 53,32 57,38 C60,43 64,19 68,15 C72,11 76,31 79,35 C82,38 86,21 90,16";
+
+const MAP_STOPS = [
+  {id:'kuchyna', zone:'dom', icon:'🍳', title:'Kuchyňa', type:'mc', questions:[
+    {sk:'Stôl', options:['Table','Chair','Shelf','Cupboard'], answer:0},
+    {sk:'Chladnička', options:['Fridge','Freezer','Oven','Sink'], answer:0},
+    {sk:'Mikrovlnka', options:['Microwave','Oven','Toaster','Kettle'], answer:0},
+    {sk:'Rúra (na pečenie)', options:['Oven','Microwave','Stove','Grill'], answer:0},
+    {sk:'Drez', options:['Sink','Tap','Bowl','Bucket'], answer:0},
+    {sk:'Kanvica (na vodu)', options:['Kettle','Pot','Pan','Jug'], answer:0},
+    {sk:'Mixér', options:['Mixer','Blender','Whisk','Grater'], answer:0},
+    {sk:'Riad (nádoby)', options:['Dishes','Plates','Pots','Cutlery'], answer:0},
+    {sk:'Lyžica', options:['Spoon','Fork','Knife','Plate'], answer:0},
+    {sk:'Skrinka (kuchynská)', options:['Cupboard','Wardrobe','Drawer','Fridge'], answer:0},
+    {type:'scramble', answer:'spoon', sk:'lyžica'},
+    {type:'scramble', answer:'kettle', sk:'kanvica'},
+  ]},
+  {id:'obyvacka', zone:'dom', icon:'🛋️', title:'Obývačka', type:'mc', questions:[
+    {sk:'Gauč/pohovka', options:['Sofa','Chair','Bed','Bench'], answer:0},
+    {sk:'Televízor', options:['TV','Radio','Screen','Monitor'], answer:0},
+    {sk:'Diaľkové ovládanie', options:['Remote control','Controller','Switch','Button'], answer:0},
+    {sk:'Koberec', options:['Carpet','Curtain','Cushion','Blanket'], answer:0},
+    {sk:'Kreslo', options:['Armchair','Sofa','Stool','Bench'], answer:0},
+    {sk:'Knižnica (nábytok)', options:['Bookshelf','Bookstore','Library','Cabinet'], answer:0},
+    {sk:'Lampa', options:['Lamp','Light','Candle','Bulb'], answer:0},
+    {sk:'Záclony/závesy', options:['Curtains','Carpet','Blinds','Cushions'], answer:0},
+    {sk:'Vankúš (ozdobný)', options:['Cushion','Pillow','Blanket','Towel'], answer:0},
+    {sk:'Krb', options:['Fireplace','Chimney','Stove','Heater'], answer:0},
+  ]},
+  {id:'spalna', zone:'dom', icon:'🛏️', title:'Spálňa', type:'mc', questions:[
+    {sk:'Posteľ', options:['Bed','Sofa','Chair','Desk'], answer:0},
+    {sk:'Vankúš (na spanie)', options:['Pillow','Cushion','Blanket','Sheet'], answer:0},
+    {sk:'Deka', options:['Blanket','Sheet','Pillow','Towel'], answer:0},
+    {sk:'Skriňa (na oblečenie)', options:['Wardrobe','Cupboard','Drawer','Closet'], answer:0},
+    {sk:'Zrkadlo', options:['Mirror','Window','Picture','Frame'], answer:0},
+    {sk:'Budík', options:['Alarm clock','Clock','Timer','Watch'], answer:0},
+    {sk:'Zásuvka (v nábytku)', options:['Drawer','Shelf','Cupboard','Box'], answer:0},
+    {sk:'Plachta (posteľná)', options:['Sheet','Blanket','Cover','Cloth'], answer:0},
+    {sk:'Vešiak', options:['Hanger','Hook','Rack','Peg'], answer:0},
+    {sk:'Nočná lampa', options:['Bedside lamp','Nightlight','Lamp shade','Reading light'], answer:0},
+  ]},
+  {id:'doma-frazy', zone:'dom', icon:'⚡', title:'Doma — bežné frázy', type:'mc', questions:[
+    {sk:'Pozri sa na to', options:['Look at it','Look for it','Look up it','Look in it'], answer:0},
+    {sk:'Zapni svetlo', options:['Turn on the light','Turn off the light','Turn up the light','Turn down the light'], answer:0},
+    {sk:'Vyzleč si kabát', options:['Take off your coat','Take on your coat','Put down your coat','Take out your coat'], answer:0},
+    {sk:'Hľadám svoje kľúče', options:["I'm looking for my keys","I'm looking at my keys","I'm looking up my keys","I'm looking in my keys"], answer:0},
+    {sk:'Zavolaj mi späť', options:['Call me back','Call me up','Call me in','Call me out'], answer:0},
+    {sk:'Ponáhľaj sa!', options:['Hurry up!','Hurry down!','Hurry on!','Hurry in!'], answer:0},
+    {sk:'Daj si pozor', options:['Watch out','Watch in','Watch on','Watch up'], answer:0},
+    {sk:'Vzdaj sa', options:['Give up','Take up','Look up','Get up'], answer:0},
+    {sk:'Prebudiť sa', options:['Wake up','Wake on','Wake in','Wake out'], answer:0},
+    {sk:'Pokračuj', options:['Go on','Go up','Go in','Go out'], answer:0},
+  ]},
+  {id:'kratke-vety', zone:'skola', icon:'🧩', title:'Krátke vety', type:'fill', questions:[
+    {sentence:'My name ___ Peter.', answer:'is', sk:'Volám sa Peter.'},
+    {sentence:'They ___ two dogs.', answer:'have', sk:'Majú dva psy.'},
+    {sentence:'I ___ up at 7 every day.', answer:'get', sk:'Vstávam každý deň o 7.'},
+    {sentence:'We usually eat lunch ___ noon.', answer:'at', sk:'Zvyčajne obedujeme na obed.'},
+    {sentence:'She is reading ___ book.', answer:'a', sk:'Číta knihu.'},
+    {sentence:'Is there a pharmacy ___ here?', answer:'near', sk:'Je tu blízko lekáreň?'},
+    {sentence:'I need ___ go to work now.', answer:'to', sk:'Teraz musím ísť do práce.'},
+    {sentence:'He ___ tired after work.', answer:'is', sk:'Je unavený po práci.'},
+    {sentence:'Do you ___ any brothers or sisters?', answer:'have', sk:'Máš nejakých súrodencov?'},
+    {sentence:'Turn left ___ the corner.', answer:'at', sk:'Zabočte doľava na rohu.'},
+    {type:'order', words:['I','like','coffee'], sk:'Mám rád kávu.'},
+    {type:'order', words:['She','is','my','sister'], sk:'Ona je moja sestra.'},
+  ]},
+  {id:'cas', zone:'skola', icon:'⏰', title:'Čas a bežný deň', type:'fill', questions:[
+    {sentence:'I ___ watching TV when the phone rang.', answer:'was', sk:'Pozeral som telku, keď zazvonil telefón.'},
+    {sentence:'She ___ already left when I arrived.', answer:'had', sk:'Ona už odišla, keď som prišiel.'},
+    {sentence:'We ___ going to the beach this weekend.', answer:'are', sk:'Ideme na pláž tento víkend.'},
+    {sentence:'He usually ___ breakfast at 7.', answer:'has', sk:'Zvyčajne raňajkuje o 7.'},
+    {sentence:'By next year, I ___ have finished my studies.', answer:'will', sk:'Do budúceho roka dokončím štúdium.'},
+    {sentence:'They ___ been living here since 2015.', answer:'have', sk:'Bývajú tu od roku 2015.'},
+    {sentence:'If it rains, we ___ stay home.', answer:'will', sk:'Ak bude pršať, zostaneme doma.'},
+    {sentence:'I ___ never been to Paris.', answer:'have', sk:'Nikdy som nebol v Paríži.'},
+    {sentence:'She was cooking while he ___ setting the table.', answer:'was', sk:'Ona varila, kým on prestieral stôl.'},
+    {sentence:'We ___ just finished the meeting.', answer:'have', sk:'Práve sme skončili poradu.'},
+  ]},
+  {id:'gramatika', zone:'skola', icon:'📐', title:'Gramatické chytáky', type:'mc', questions:[
+    {sk:'If I ___ more time, I would travel more.', options:['had','have','would have','has'], answer:0},
+    {sk:'She has been working here ___ 2019.', options:['since','for','from','in'], answer:0},
+    {sk:'I wish I ___ speak French.', options:['could','can','would','will'], answer:0},
+    {sk:'This book was written ___ a famous author.', options:['by','from','of','with'], answer:0},
+    {sk:'By the time we arrived, the film ___ started.', options:['had','has','was','did'], answer:0},
+    {sk:'He suggested ___ a different approach.', options:['trying','to try','try','tries'], answer:0},
+    {sk:'Neither of the answers ___ correct.', options:['is','are','be','been'], answer:0},
+    {sk:"I'd rather you ___ smoke here.", options:["didn't","don't",'not',"won't"], answer:0},
+    {sk:'The more you practice, ___ you get.', options:['the better','better','the best','more better'], answer:0},
+    {sk:"It's high time we ___ home.", options:['went','go','going','gone'], answer:0},
+    {type:'truefalse', statement:'"It\'s" with an apostrophe always means "belongs to it".', options:['Pravda','Nepravda'], answer:1, trapNote:'„It\'s" (s apostrofom) znamená „it is". Privlastňovacie je „its" bez apostrofu!'},
+    {type:'truefalse', statement:'The past tense of "go" is "goed".', options:['Pravda','Nepravda'], answer:1, trapNote:'Správny tvar je nepravidelné sloveso „went".'},
+  ]},
+  {id:'obrazky', zone:'kaviaren', icon:'🎈', title:'Obrázky a situácie', type:'emoji', questions:[
+    {emoji:'🎂', answer:'cake', sk:'torta'},
+    {emoji:'🕶️', answer:'sunglasses', sk:'slnečné okuliare'},
+    {emoji:'🧳', answer:'suitcase', sk:'kufor'},
+    {emoji:'🏥', answer:'hospital', sk:'nemocnica'},
+    {emoji:'🎉', answer:'party', sk:'oslava'},
+    {emoji:'🧑‍🍳', answer:'chef', sk:'kuchár'},
+    {emoji:'🛏️', answer:'bed', sk:'posteľ'},
+    {emoji:'🚿', answer:'shower', sk:'sprcha'},
+    {emoji:'📱', answer:'phone', sk:'telefón'},
+    {emoji:'🔑', answer:'key', sk:'kľúč'},
+  ]},
+  {id:'bonus', zone:'kaviaren', icon:'🎭', title:'Chytáky a hádanky', type:'mc', pointValue:2, questions:[
+    {sk:'Aktuálny (napr. aktuálna téma)', options:['Current','Actual','Actually','Act'], answer:0, trapNote:'„Actual“ v angličtine neznamená aktuálny, ale skutočný!'},
+    {sk:'Sympatický (človek)', options:['Likeable','Sympathetic','Sympathy','Simple'], answer:0, trapNote:'„Sympathetic“ znamená súcitný, nie sympatický!'},
+    {sk:'Gymnázium (škola)', options:['Grammar school','Gym','Gymnasium','Class'], answer:0, trapNote:'„Gym“ je telocvičňa, nie gymnázium!'},
+    {sk:'Šéf (v práci)', options:['Boss','Chef','Head','Manager'], answer:0, trapNote:'„Chef“ je kuchár, nie šéf!'},
+    {sk:'Recept (na varenie)', options:['Recipe','Receipt','Prescription','Bill'], answer:0, trapNote:'„Receipt“ je doklad o zaplatení, nie recept na jedlo!'},
+    {sk:'Eventuálne (možno)', options:['Possibly','Eventually','Finally','Actually'], answer:0, trapNote:'„Eventually“ znamená nakoniec, nie eventuálne!'},
+    {type:'riddle', riddle:'What has a face and two hands, but no arms or legs?', answer:'a clock', sk:'hodiny'},
+    {type:'riddle', riddle:'What has to be broken before you can use it?', answer:'an egg', sk:'vajce'},
+    {type:'riddle', riddle:'The more you take, the more you leave behind. What am I?', answer:'footsteps', sk:'kroky / stopy'},
+    {type:'riddle', riddle:'What can travel around the world while staying in one corner?', answer:'a stamp', sk:'poštová známka'},
+  ]},
+  {id:'frazove2', zone:'kaviaren', icon:'🔀', title:'Frázové slovesá II', type:'mc', questions:[
+    {sk:'Odložiť (na neskôr)', options:['Put off','Put on','Put up','Put down'], answer:0},
+    {sk:'Vychádzať s niekým (dobre)', options:['Get along','Get up','Get over','Get on'], answer:0},
+    {sk:'Tešiť sa na niečo', options:['Look forward to','Look after','Look into','Look up to'], answer:0},
+    {sk:'Dôjsť (napr. mlieko)', options:['Run out of','Run into','Run away','Run over'], answer:0},
+    {sk:'Podobať sa (na rodiča)', options:['Take after','Take off','Take up','Take over'], answer:0},
+    {sk:'Náhodou naraziť na niečo', options:['Come across','Come up with','Come along','Come over'], answer:0},
+    {sk:'Zniesť/tolerovať niečo', options:['Put up with','Put off','Put down','Put away'], answer:0},
+    {sk:'Pokaziť sa (o aute)', options:['Break down','Break up','Break in','Break out'], answer:0},
+    {sk:'Prísť na niečo (vyriešiť)', options:['Figure out','Find out','Sort out','Work out'], answer:0},
+    {sk:'Vysporiadať sa s niečím', options:['Deal with','Cope with','Handle with','Manage with'], answer:0},
+  ]},
+  {id:'idiomy', zone:'kaviaren', icon:'💬', title:'Idiómy v bežnej reči', type:'mc', questions:[
+    {sk:'Niečo veľmi jednoduché', options:['A piece of cake','A piece of pie','A slice of bread','A walk in the kitchen'], answer:0},
+    {sk:'Necítiť sa dobre (mierne chorý)', options:['Under the weather','Over the moon','Under the sun','Under control'], answer:0},
+    {sk:'Prelomiť napätie/ticho', options:['Break the ice','Break the silence','Break a leg','Break the rules'], answer:0},
+    {sk:'Intenzívne sa učiť', options:['Hit the books','Hit the road','Hit the sack','Hit the gym'], answer:0},
+    {sk:'Stáť veľa peňazí', options:['Cost an arm and a leg','Cost a leg and an arm','Cost a hand and a foot','Cost an eye and a nose'], answer:0},
+    {sk:'Veľmi zriedka', options:['Once in a blue moon','Once in a red sun','Once in a while','Once upon a time'], answer:0},
+    {sk:'Byť veľmi šikovný/výkonný', options:['On the ball','On the roll','On the top','On the fire'], answer:0},
+    {sk:'„Keď sa vlk spomenie...“', options:['Speak of the devil','Talk of the town','Mention the wolf','Speak your mind'], answer:0},
+    {sk:'Prezradiť tajomstvo', options:['Let the cat out of the bag','Let the dog out','Spill the milk','Open the box'], answer:0},
+    {sk:'Vybaviť dve veci naraz', options:['Kill two birds with one stone','Catch two fish with one hook','Hit two targets at once','Save two birds with one stone'], answer:0},
+  ]},
+  {id:'emocie', zone:'kaviaren', icon:'😊', title:'Emócie a osobnosť', type:'mc', questions:[
+    {sk:'Spoľahlivý', options:['Reliable','Reckless','Reluctant','Resentful'], answer:0},
+    {sk:'Arogantný', options:['Arrogant','Awkward','Anxious','Ambitious'], answer:0},
+    {sk:'Ambiciózny', options:['Ambitious','Anxious','Arrogant','Aggressive'], answer:0},
+    {sk:'Tvrdohlavý', options:['Stubborn','Shy','Sincere','Sensitive'], answer:0},
+    {sk:'Skromný', options:['Humble','Honest','Harsh','Hostile'], answer:0},
+    {sk:'Štedrý', options:['Generous','Greedy','Grateful','Gentle'], answer:0},
+    {sk:'Úzkostlivý/nervózny', options:['Anxious','Confident','Curious','Careless'], answer:0},
+    {sk:'Sebavedomý', options:['Confident','Careless','Curious','Cautious'], answer:0},
+    {sk:'Zvedavý', options:['Curious','Cautious','Careless','Confident'], answer:0},
+    {sk:'Trpezlivý', options:['Patient','Impatient','Passive','Persistent'], answer:0},
+  ]},
+  {id:'minirozhovory', zone:'kaviaren', icon:'🗨️', title:'Mini rozhovory', type:'fill', questions:[
+    {sentence:"I'm fine, ___ you?", answer:'and', sk:'Dobre, a ty?'},
+    {sentence:'Could you tell me the way ___ the museum?', answer:'to', sk:'Mohli by ste mi povedať cestu do múzea?'},
+    {sentence:'Would you like something ___ drink?', answer:'to', sk:'Chcel by si niečo na pitie?'},
+    {sentence:"I'm sorry, I ___ understand.", answer:"don't", sk:'Prepáč, nerozumiem.'},
+    {sentence:'It was nice ___ meet you.', answer:'to', sk:'Bolo pekné ťa stretnúť.'},
+    {sentence:'Can you speak ___ slowly, please?', answer:'more', sk:'Môžete hovoriť pomalšie, prosím?'},
+    {sentence:'What do you do ___ a living?', answer:'for', sk:'Čím sa živíš?'},
+    {sentence:"I've been learning English ___ two years.", answer:'for', sk:'Učím sa angličtinu už dva roky.'},
+    {sentence:"Let's meet ___ the café at five.", answer:'at', sk:'Stretneme sa v kaviarni o piatej.'},
+    {sentence:'Thanks a lot, I really appreciate ___.', answer:'it', sk:'Vďaka, naozaj si to vážim.'},
+  ]},
+  {id:'jedlo', zone:'mesto', icon:'🛒', title:'Jedlo a nakupovanie', type:'mc', questions:[
+    {sk:'Syr', options:['Cheese','Butter','Milk','Yogurt'], answer:0},
+    {sk:'Maslo', options:['Butter','Cheese','Cream','Oil'], answer:0},
+    {sk:'Vajcia', options:['Eggs','Meat','Fish','Rice'], answer:0},
+    {sk:'Zelenina', options:['Vegetables','Fruit','Herbs','Spices'], answer:0},
+    {sk:'Ovocie', options:['Fruit','Vegetables','Nuts','Grain'], answer:0},
+    {sk:'Lacný', options:['Cheap','Expensive','Free','Discounted'], answer:0},
+    {sk:'Drahý', options:['Expensive','Cheap','Affordable','Priceless'], answer:0},
+    {sk:'Zľava', options:['Discount','Price','Bill','Tax'], answer:0},
+    {sk:'Košík (na nákup)', options:['Basket','Trolley','Bag','Box'], answer:0},
+    {sk:'Pokladňa (v obchode)', options:['Checkout','Entrance','Exit','Warehouse'], answer:0},
+  ]},
+  {id:'cestovanie', zone:'mesto', icon:'🚉', title:'Cestovanie a doprava', type:'mc', questions:[
+    {sk:'Nástupište', options:['Platform','Track','Station','Gate'], answer:0},
+    {sk:'Batožina', options:['Luggage','Cargo','Package','Suitcase'], answer:0},
+    {sk:'Meškanie (letu/vlaku)', options:['Delay','Cancellation','Departure','Arrival'], answer:0},
+    {sk:'Palubný lístok', options:['Boarding pass','Ticket','Passport','Visa'], answer:0},
+    {sk:'Prestup (na inú linku)', options:['Connection','Transfer','Route','Journey'], answer:0},
+    {sk:'Pasová kontrola', options:['Passport control','Security check','Customs','Check-in'], answer:0},
+    {sk:'Odbavenie (na letisku)', options:['Check-in','Check-out','Boarding','Landing'], answer:0},
+    {sk:'Odlet', options:['Departure','Arrival','Boarding','Delay'], answer:0},
+    {sk:'Prílet', options:['Arrival','Departure','Landing','Take-off'], answer:0},
+    {sk:'Východ (k lietadlu)', options:['Gate','Platform','Terminal','Exit'], answer:0},
+  ]},
+  {id:'technologie', zone:'kancelaria', icon:'💻', title:'Technológie a internet', type:'mc', questions:[
+    {sk:'Heslo', options:['Password','Username','Login','Code'], answer:0},
+    {sk:'Nahrať (súbor)', options:['Upload','Download','Update','Install'], answer:0},
+    {sk:'Stiahnuť (súbor)', options:['Download','Upload','Delete','Save'], answer:0},
+    {sk:'Prehliadač', options:['Browser','Server','Provider','Router'], answer:0},
+    {sk:'Škodlivý softvér', options:['Malware','Software','Hardware','Firmware'], answer:0},
+    {sk:'Predplatné', options:['Subscription','Subscriber','Payment','Membership'], answer:0},
+    {sk:'Upozornenie (v telefóne)', options:['Notification','Alert','Message','Notice'], answer:0},
+    {sk:'Aktualizácia (softvéru)', options:['Update','Upgrade','Install','Restart'], answer:0},
+    {sk:'Záloha (dát)', options:['Backup','Storage','Recovery','Sync'], answer:0},
+    {sk:'Cloudové úložisko', options:['Cloud storage','Hard drive','Local storage','Server room'], answer:0},
+  ]},
+  {id:'emaily', zone:'kancelaria', icon:'✉️', title:'Písomná komunikácia', type:'mc', questions:[
+    {sk:'„S pozdravom“ (na konci e-mailu)', options:['Best regards','Best wishes','Yours faithfully','Dear Sir'], answer:0},
+    {sk:'„V prílohe nájdete...“', options:['Please find attached','Please find enclosed','See below','Kindly attached'], answer:0},
+    {sk:'„Ospravedlňujem sa za oneskorenú odpoveď“', options:['Sorry for the late reply','Sorry for the delay reply','Apologize for lately','Excuse the late answer'], answer:0},
+    {sk:'„Podľa dohody“', options:['As agreed','As discussed','As mentioned','As planned'], answer:0},
+    {sk:'„Prosím, dajte mi vedieť“', options:['Please let me know','Please tell me','Please inform','Please notice'], answer:0},
+    {sk:'„Teším sa na vašu odpoveď“', options:['I look forward to hearing from you','I look forward to hear from you',"I'm looking forward to your answer",'I wait for your reply'], answer:0},
+    {sk:'„V prípade otázok ma neváhajte kontaktovať“', options:["Please don't hesitate to contact me","Please don't hesitate to contacting me",'Feel free to contact me anytime soon',"Don't be afraid to call me"], answer:0},
+    {sk:'„Rád by som naplánoval stretnutie“', options:['I would like to schedule a meeting','I would like to plan a meeting','I want to make a meeting',"I'd like to arrange an appointment"], answer:0},
+    {sk:'„Ako sme sa dohodli na hovore“', options:['As per our call','As per our phone','According to our call','Like we said on call'], answer:0},
+    {sk:'„Prosím o potvrdenie prijatia“', options:['Please confirm receipt','Please confirm reception','Please acknowledge receiving','Please confirm the receiving'], answer:0},
+  ]},
+  {id:'firemna', zone:'kancelaria', icon:'💼', title:'Firemná angličtina', type:'mc', questions:[
+    {sk:'Zainteresovaná strana (v projekte)', options:['Stakeholder','Shareholder','Partner','Investor'], answer:0},
+    {sk:'Merateľný ukazovateľ výkonu', options:['KPI','ROI','CEO','FYI'], answer:0},
+    {sk:'Termín odovzdania', options:['Deadline','Timeline','Milestone','Deliverable'], answer:0},
+    {sk:'Konečný výstup projektu', options:['Deliverable','Outcome','Output','Result'], answer:0},
+    {sk:'Využiť páku/výhodu', options:['Leverage','Advantage','Benefit','Profit'], answer:0},
+    {sk:'Zjednodušiť a zefektívniť proces', options:['Streamline','Simplify','Optimize','Automate'], answer:0},
+    {sk:'Zosúladiť ciele tímov', options:['Align','Adjust','Match','Sync'], answer:0},
+    {sk:'Zapracovanie nového zamestnanca', options:['Onboarding','Training','Induction','Orientation'], answer:0},
+    {sk:'Odhad budúcich nákladov/príjmov', options:['Forecast','Estimate','Projection','Prediction'], answer:0},
+    {sk:'Vzájomne prospešný efekt spolupráce', options:['Synergy','Cooperation','Collaboration','Partnership'], answer:0},
+  ]},
+  {id:'zdravie', zone:'nemocnica', icon:'🩺', title:'Zdravie a telo', type:'mc', questions:[
+    {sk:'Príznak (choroby)', options:['Symptom','Diagnosis','Treatment','Disease'], answer:0},
+    {sk:'Dohodnutý termín u lekára', options:['Appointment','Prescription','Checkup','Consultation'], answer:0},
+    {sk:'Lekársky predpis', options:['Prescription','Recipe','Diagnosis','Appointment'], answer:0, trapNote:'Pozor, rovnaký chyták ako pri "recepte na jedlo" — "recipe" je na varenie, nie od lekára!'},
+    {sk:'Alergia', options:['Allergy','Infection','Injury','Illness'], answer:0},
+    {sk:'Zranenie', options:['Injury','Illness','Allergy','Infection'], answer:0},
+    {sk:'Zotavenie (z choroby)', options:['Recovery','Treatment','Therapy','Cure'], answer:0},
+    {sk:'Liečba', options:['Treatment','Recovery','Prevention','Diagnosis'], answer:0},
+    {sk:'Pravidelná prehliadka (u lekára)', options:['Checkup','Appointment','Surgery','Therapy'], answer:0},
+    {sk:'Horúčka', options:['Fever','Cough','Cold','Flu'], answer:0},
+    {sk:'Liek proti bolesti', options:['Painkiller','Medicine','Pill','Antibiotic'], answer:0},
+  ]},
+  {id:'pravo', zone:'hlavnemesto', icon:'⚖️', title:'Právo a financie', type:'mc', questions:[
+    {sk:'Zodpovednosť (právna)', options:['Liability','Responsibility','Obligation','Duty'], answer:0},
+    {sk:'Doložka (v zmluve)', options:['Clause','Section','Paragraph','Article'], answer:0},
+    {sk:'Porušenie zmluvy', options:['Breach of contract','Violation of contract','Failure of contract','Break of contract'], answer:0},
+    {sk:'Súlad s predpismi', options:['Compliance','Regulation','Legislation','Obedience'], answer:0},
+    {sk:'Vlastný kapitál', options:['Equity','Asset','Capital','Revenue'], answer:0},
+    {sk:'Majetok/aktívum', options:['Asset','Liability','Equity','Debt'], answer:0},
+    {sk:'Likvidita (schopnosť platiť)', options:['Liquidity','Solvency','Capital','Currency'], answer:0},
+    {sk:'Nedbanlivosť', options:['Negligence','Ignorance','Incompetence','Carelessness'], answer:0},
+    {sk:'Právomoc (súdu)', options:['Jurisdiction','Authority','Legislation','Regulation'], answer:0},
+    {sk:'Rozhodcovské konanie', options:['Arbitration','Litigation','Mediation','Negotiation'], answer:0},
+  ]},
+  {id:'akademicka', zone:'hlavnemesto', icon:'🔬', title:'Akademická a odborná angličtina', type:'mc', questions:[
+    {sk:'Predpoklad (na overenie v štúdii)', options:['Hypothesis','Thesis','Theory','Assumption'], answer:0},
+    {sk:'Zhrnutie práce na jej začiatku', options:['Abstract','Summary','Synopsis','Outline'], answer:0},
+    {sk:'Založený na pozorovaní a experimente', options:['Empirical','Theoretical','Statistical','Analytical'], answer:0},
+    {sk:'Štatisticky podstatný rozdiel', options:['Significant','Important','Relevant','Considerable'], answer:0},
+    {sk:'Súvislosť medzi javmi (nie príčina!)', options:['Correlation','Causation','Connection','Coincidence'], answer:0},
+    {sk:'Určenie, o akú chorobu ide', options:['Diagnosis','Prognosis','Symptom','Syndrome'], answer:0},
+    {sk:'Predpokladaný budúci priebeh choroby', options:['Prognosis','Diagnosis','Treatment','Symptom'], answer:0},
+    {sk:'Dlhotrvajúci (o chorobe)', options:['Chronic','Acute','Terminal','Severe'], answer:0},
+    {sk:'Náhly a intenzívny nástup (o chorobe)', options:['Acute','Chronic','Mild','Gradual'], answer:0},
+    {sk:'Dôvod, prečo liek nepodať', options:['Contraindication','Side effect','Adverse reaction','Symptom'], answer:0},
+  ]},
+  {id:'expertna', zone:'hlavnemesto', icon:'🧠', title:'Expertná slovná zásoba', type:'mc', questions:[
+    {sk:'Všadeprítomný', options:['Ubiquitous','Obsolete','Ambiguous','Arbitrary'], answer:0},
+    {sk:'Vzor/model myslenia', options:['Paradigm','Paradox','Prototype','Premise'], answer:0},
+    {sk:'Postavenie vedľa seba (na porovnanie)', options:['Juxtaposition','Contrast','Comparison','Combination'], answer:0},
+    {sk:'Pominuteľný/krátkotrvajúci', options:['Ephemeral','Eternal','Persistent','Gradual'], answer:0},
+    {sk:'Typický/vzorový príklad', options:['Quintessential','Exceptional','Essential','Fundamental'], answer:0},
+    {sk:'Zdanlivý (nie skutočný)', options:['Ostensible','Obvious','Optional','Objective'], answer:0},
+    {sk:'Nejednoznačný', options:['Ambiguous','Arbitrary','Absolute','Accurate'], answer:0},
+    {sk:'Zlepšiť (situáciu)', options:['Ameliorate','Aggravate','Alleviate','Accelerate'], answer:0},
+    {sk:'Povrchný/vykonaný bez záujmu', options:['Perfunctory','Meticulous','Diligent','Thorough'], answer:0},
+    {sk:'Zrozumiteľný len málokomu (odborný)', options:['Esoteric','Exotic','Eccentric','Elite'], answer:0},
+  ]},
+  {id:'finale', zone:'letisko', icon:'👑', title:'Finále — najťažšie slovo', type:'finale', pointValue:5, questions:[
+    {
+      word:'FLOCCINAUCINIHILIPILIFICATION',
+      label:'Posledná výzva — 29 písmen. Čo to slovo znamená?',
+      options:[
+        'Posudzovanie niečoho ako úplne bezcenného',
+        'Strach z veľmi dlhých slov',
+        'Vedecká metóda datovania skamenelín',
+        'Nadmerne zložitý súdny spor',
+      ],
+      answer:0,
+      funFact:'V roku 2012 toto slovo v prejave v britskom parlamente použil vtedajší minister financií George Osborne — a stalo sa virálnou senzáciou.',
+    },
+  ]},
+];
+const MAP_TOTAL = MAP_STOPS.reduce((sum,s)=>sum+s.questions.length*(s.pointValue||1), 0);
+
+const DESTINATIONS = {
+  ru: { code:'ru', flag:'<span class="flag-chip flag-ru"></span>', name:'Rusko', stops:[
+    {id:'ru-metro', icon:'🚇', title:'Metro a lístky', questions:[
+      {sk:'Lístok', options:['Билет','Карта','Паспорт','Ключ'], answer:0},
+      {sk:'Stanica (metra)', options:['Станция','Улица','Площадь','Вокзал'], answer:0},
+      {sk:'Vchod', options:['Вход','Выход','Дверь','Окно'], answer:0},
+      {sk:'Východ', options:['Выход','Вход','Дверь','Окно'], answer:0},
+      {sk:'Doľava', options:['Налево','Направо','Прямо','Назад'], answer:0},
+      {sk:'Doprava', options:['Направо','Налево','Прямо','Назад'], answer:0},
+      {sk:'Koľko to stojí?', options:['Сколько это стоит?','Где это?','Что это?','Как дела?'], answer:0},
+      {sk:'Ďakujem', options:['Спасибо','Пожалуйста','Извините','Привет'], answer:0},
+    ]},
+    {id:'ru-obchod', icon:'🛍️', title:'Obchod', questions:[
+      {sk:'Obchod', options:['Магазин','Рынок','Аптека','Банк'], answer:0},
+      {sk:'Chlieb', options:['Хлеб','Молоко','Сыр','Мясо'], answer:0},
+      {sk:'Mlieko', options:['Молоко','Вода','Сок','Чай'], answer:0},
+      {sk:'Cena', options:['Цена','Скидка','Чек','Касса'], answer:0},
+      {sk:'Pokladňa', options:['Касса','Полка','Тележка','Вход'], answer:0},
+      {sk:'Prosím', options:['Пожалуйста','Спасибо','Извините','Привет'], answer:0},
+      {sk:'Koľko?', options:['Сколько?','Где?','Когда?','Кто?'], answer:0},
+      {sk:'Prepáčte', options:['Извините','Спасибо','Пожалуйста','Привет'], answer:0},
+    ]},
+    {id:'ru-ulica', icon:'🚸', title:'Ulica a ľudia', questions:[
+      {sk:'Ahoj', options:['Привет','Пока','Спасибо','Извините'], answer:0},
+      {sk:'Dovidenia', options:['До свидания','Привет','Спасибо','Пожалуйста'], answer:0},
+      {sk:'Ako sa voláš?', options:['Как тебя зовут?','Как дела?','Сколько тебе лет?','Откуда ты?'], answer:0},
+      {sk:'Ako sa máš?', options:['Как дела?','Как тебя зовут?','Где ты живёшь?','Что ты делаешь?'], answer:0},
+      {sk:'Priateľ', options:['Друг','Враг','Сосед','Гость'], answer:0},
+      {sk:'Ulica', options:['Улица','Площадь','Парк','Мост'], answer:0},
+      {sk:'Kde je...?', options:['Где...?','Что...?','Когда...?','Почему...?'], answer:0},
+      {sk:'Pomoc!', options:['Помощь!','Привет!','Стоп!','Осторожно!'], answer:0},
+    ]},
+  ]},
+  fr: { code:'fr', flag:'<span class="flag-chip flag-fr"></span>', name:'Francúzsko', stops:[
+    {id:'fr-kaviaren', icon:'☕', title:'Kaviareň', questions:[
+      {sk:'Káva', options:['Café','Thé','Lait','Eau'], answer:0},
+      {sk:'Croissant', options:['Croissant','Pain','Gâteau','Baguette'], answer:0},
+      {sk:'Účet, prosím', options:["L'addition, s'il vous plaît","Le menu, s'il vous plaît","Un café, s'il vous plaît","Merci beaucoup"], answer:0},
+      {sk:'Čašník', options:['Serveur','Client','Cuisinier','Ami'], answer:0},
+      {sk:'Stôl pre dvoch', options:['Une table pour deux','Un café pour deux','Une addition pour deux','Un menu pour deux'], answer:0},
+      {sk:'Cukor', options:['Sucre','Sel','Lait','Citron'], answer:0},
+      {sk:'Chutné', options:['Délicieux','Terrible','Cher','Froid'], answer:0},
+      {sk:'Ďakujem', options:['Merci','Bonjour','Pardon',"S'il vous plaît"], answer:0},
+    ]},
+    {id:'fr-stanica', icon:'🚉', title:'Vlaková stanica', questions:[
+      {sk:'Vlak', options:['Train','Bus','Avion','Voiture'], answer:0},
+      {sk:'Lístok', options:['Billet','Passeport','Carte','Argent'], answer:0},
+      {sk:'Nástupište', options:['Quai','Gare','Voie','Sortie'], answer:0},
+      {sk:'Odchod', options:['Départ','Arrivée','Retard','Correspondance'], answer:0},
+      {sk:'Príchod', options:['Arrivée','Départ','Retard','Correspondance'], answer:0},
+      {sk:'Meškanie', options:['Retard','Départ','Arrivée','Vitesse'], answer:0},
+      {sk:'Kde je stanica?', options:['Où est la gare?','Quelle heure est-il?','Combien ça coûte?','Comment allez-vous?'], answer:0},
+      {sk:'Priama linka (bez prestupu)', options:['Direct','Correspondance','Retard','Arrêt'], answer:0},
+    ]},
+    {id:'fr-butik', icon:'👗', title:'Butik', questions:[
+      {sk:'Šaty', options:['Robe','Chemise','Pantalon','Chaussures'], answer:0},
+      {sk:'Košeľa', options:['Chemise','Robe','Jupe','Manteau'], answer:0},
+      {sk:'Veľkosť', options:['Taille','Couleur','Prix','Style'], answer:0},
+      {sk:'Farba', options:['Couleur','Taille','Prix','Matière'], answer:0},
+      {sk:'Skúšobná kabínka', options:["Cabine d'essayage",'Caisse','Vitrine','Sortie'], answer:0},
+      {sk:'Môžem si to vyskúšať?', options:["Je peux l'essayer?",'Combien ça coûte?','Où est la sortie?',"C'est trop grand"], answer:0},
+      {sk:'Príliš drahé', options:['Trop cher','Très joli','Trop petit','Bon marché'], answer:0},
+      {sk:'Zľava', options:['Réduction','Prix','Taille','Style'], answer:0},
+    ]},
+    {id:'fr-eiffel', icon:'🗼', title:'Eiffelova veža', questions:[
+      {sk:'Pamiatka', options:['Monument','Musée','Église','Château'], answer:0},
+      {sk:'Výhľad', options:['Vue','Photo','Billet','Entrée'], answer:0},
+      {sk:'Vstupenka', options:['Entrée','Sortie','Billet de train','Addition'], answer:0},
+      {sk:'Fotografovať', options:['Photographier','Regarder','Acheter','Manger'], answer:0},
+      {sk:'Múzeum', options:['Musée','Monument','Église','Parc'], answer:0},
+      {sk:'Krásny výhľad', options:['Belle vue','Grand musée','Long voyage','Bon marché'], answer:0},
+      {sk:'Kde je vchod?', options:["Où est l'entrée?",'Où est la sortie?','Quelle heure est-il?',"C'est combien?"], answer:0},
+      {sk:'Nezabudni fotku!', options:["N'oublie pas la photo!","Prends l'addition!",'Achète un billet!','Regarde la vue!'], answer:0},
+    ]},
+  ]},
+  es: { code:'es', flag:'<span class="flag-chip flag-es"></span>', name:'Španielsko', stops:[
+    {id:'es-obchod', icon:'🏬', title:'Obchod v Madride', questions:[
+      {sk:'Obchod', options:['Tienda','Mercado','Farmacia','Banco'], answer:0},
+      {sk:'Koľko to stojí?', options:['¿Cuánto cuesta?','¿Dónde está?','¿Qué hora es?','¿Cómo estás?'], answer:0},
+      {sk:'Príliš drahé', options:['Demasiado caro','Muy barato','Muy bonito','Demasiado grande'], answer:0},
+      {sk:'Zľava', options:['Descuento','Precio','Recibo','Caja'], answer:0},
+      {sk:'Pokladňa', options:['Caja','Estante','Carrito','Entrada'], answer:0},
+      {sk:'Veľkosť', options:['Talla','Color','Precio','Estilo'], answer:0},
+      {sk:'Môžem platiť kartou?', options:['¿Puedo pagar con tarjeta?','¿Dónde está el baño?','¿A qué hora cierran?','¿Tiene esto en otro color?'], answer:0},
+      {sk:'Ďakujem', options:['Gracias','Por favor','Perdón','Hola'], answer:0},
+    ]},
+    {id:'es-restauracia', icon:'🍽️', title:'Komunikácia s predavačom', questions:[
+      {sk:'Dobrý deň', options:['Buenos días','Buenas noches','Adiós','Gracias'], answer:0},
+      {sk:'Prosím', options:['Por favor','Gracias','Perdón','De nada'], answer:0},
+      {sk:'Chcel by som...', options:['Quisiera...','Necesito...','Tengo...','Quiero comprar...'], answer:0},
+      {sk:'Účet, prosím', options:['La cuenta, por favor','El menú, por favor','Un café, por favor','Buenas tardes'], answer:0},
+      {sk:'Chutné', options:['Delicioso','Horrible','Caro','Frío'], answer:0},
+      {sk:'Odporúčate niečo?', options:['¿Qué me recomienda?','¿Dónde está el baño?','¿Cuánto cuesta esto?','¿A qué hora abren?'], answer:0},
+      {sk:'Som alergický na...', options:['Soy alérgico a...','Me gusta...','Quiero probar...','No entiendo...'], answer:0},
+      {sk:'Dovidenia', options:['Adiós','Hola','Gracias','Perdón'], answer:0},
+    ]},
+  ]},
+};
+
+const DEST_COLORS = {ru:'#c9564d', fr:'#4169b0', es:'#c9a227'};
+function destTotal(code){ return DESTINATIONS[code].stops.reduce((sum,s)=>sum+s.questions.length,0); }
+function journeyProgressPct(p){
+  if(p.destination){
+    const dest = DESTINATIONS[p.destination];
+    const totalQ = destTotal(p.destination);
+    let done = 0;
+    for(let i=0;i<p.destStopIdx;i++) done += dest.stops[i].questions.length;
+    done += p.destQIdx;
+    return totalQ ? Math.round((done/totalQ)*100) : 0;
+  }
+  const totalQ = MAP_STOPS.reduce((s,st)=>s+st.questions.length,0);
+  let done = 0;
+  for(let i=0;i<p.stopIdx;i++) done += MAP_STOPS[i].questions.length;
+  done += p.qIdx;
+  return totalQ ? Math.round((done/totalQ)*100) : 0;
+}
+function questionsRemainingInCurrentStop(){
+  if(progress.destination){
+    const dest = DESTINATIONS[progress.destination];
+    const stop = dest.stops[progress.destStopIdx];
+    return stop ? stop.questions.length - progress.destQIdx : 0;
+  }
+  if(progress.reachedAirport) return 0;
+  const stop = currentStop();
+  return stop ? stop.questions.length - progress.qIdx : 0;
+}
+
+/* ================= helpers ================= */
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function bodWord(n){ if(n===1) return 'bod'; if(n>=2 && n<=4) return 'body'; return 'bodov'; }
+function shuffleArr(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function shuffleQuestionOptions(q){ if(!q.options) return q; const order=shuffleArr(q.options.map((_,i)=>i)); return {...q, options:order.map(i=>q.options[i]), answer:order.indexOf(q.answer)}; }
+function zoneOf(id){ return ZONES.find(z=>z.id===id); }
+function initials(name){ return (String(name).trim()[0]||'?').toUpperCase(); }
+function avatarColor(uid){ let h=0; for(let i=0;i<uid.length;i++) h=(h*31+uid.charCodeAt(i))>>>0; return PLAYER_COLORS[h % PLAYER_COLORS.length]; }
+function normalizeAnswer(s){ return String(s||'').trim().toLowerCase().replace(/^(a|an|the)\s+/,'').replace(/[.,!?']/g,''); }
+function scrambleWord(word){
+  let letters, tries=0;
+  do{ letters = shuffleArr(word.split('')); tries++; } while(letters.join('')===word && tries<8);
+  return letters.join('');
+}
+function isAnswerCorrect(type, q){
+  if(type==='mc' || type==='finale' || type==='truefalse') return ui.pickedOption!==null && ui.pickedOption===q.answer;
+  if(type==='order') return ui.orderPicks.join(' ')===q.words.join(' ');
+  // fill / riddle / emoji / scramble: typed text answer
+  return ui.textAnswer.trim()!=='' && normalizeAnswer(ui.textAnswer)===normalizeAnswer(q.answer);
+}
+
+function defaultProgress(email){
+  return {
+    email, displayName:'',
+    entryScore:null, passed:null,
+    score:0, stopIdx:0, qIdx:0,
+    reachedAirport:false, finished:false,
+    destination:null, destStopIdx:0, destQIdx:0, destScore:0, destFinished:false,
+    stopStats:{},
+    testQueue:null, testIdx:0,
+  };
+}
+function rankScore(p){
+  let r = (p.stopIdx||0)*100 + (p.score||0);
+  if(p.reachedAirport) r += MAP_STOPS.length*100;
+  if(p.destination){
+    r += 10000 + (p.destStopIdx||0)*200 + (p.destScore||0);
+    if(p.destFinished) r += 5000;
+  }
+  return r;
+}
+function locationLabel(p){
+  if(p.destination){
+    const dest = DESTINATIONS[p.destination];
+    if(p.destFinished) return `🏁 ${dest.name} — hotovo`;
+    return `${dest.name} · zastávka ${(p.destStopIdx||0)+1}/${dest.stops.length}`;
+  }
+  if(p.reachedAirport) return '✈️ Letisko';
+  if(!p.passed) return '📝 Vstupný test';
+  const stop = MAP_STOPS[p.stopIdx];
+  if(!stop) return '✈️ Letisko';
+  const zone = zoneOf(stop.zone);
+  return `${zone.icon} ${zone.label}`;
+}
+
+/* ================= app state ================= */
+let currentUser = null;
+let progress = null;   // firestore-backed progress doc (mirrors defaultProgress shape)
+let ui = { screen:'loading', revealed:false, pickedOption:null, textAnswer:'', orderPicks:[], nameInput:'', emailInput:'', authMsg:null, busy:false, mapReturnScreen:'stage', pinDetail:null };
+
+async function saveProgress(){
+  if(!currentUser || !progress || currentUser.isAnonymous) return;
+  try{
+    const ref = doc(db, 'progress', currentUser.uid);
+    await setDoc(ref, { ...progress, rankScore: rankScore(progress), updatedAt: Date.now() }, { merge:true });
+  }catch(e){
+    console.warn('Uloženie postupu zlyhalo (skúsi sa znova pri ďalšej akcii):', e.message);
+  }
+}
+
+/* ================= auth ================= */
+async function handleAuthEntry(){
+  if(isSignInWithEmailLink(auth, window.location.href)){
+    let email = window.localStorage.getItem(EMAIL_KEY);
+    if(!email){
+      email = window.prompt('Pre potvrdenie prihlásenia zadaj svoj email:');
+    }
+    try{
+      await signInWithEmailLink(auth, email, window.location.href);
+      window.localStorage.removeItem(EMAIL_KEY);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }catch(e){
+      ui.authMsg = { type:'error', text:'Prihlásenie zlyhalo: '+e.message };
+    }
+  }
+  onAuthStateChanged(auth, async (user)=>{
+    currentUser = user;
+    if(user && user.isAnonymous){
+      // guest: no email given, nothing ever read from or written to Firestore
+      progress = defaultProgress('');
+      ui.screen = 'nickname';
+    } else if(user){
+      try{
+        const ref = doc(db, 'progress', user.uid);
+        const snap = await getDoc(ref);
+        if(snap.exists()){
+          progress = { ...defaultProgress(user.email), ...snap.data() };
+        } else {
+          progress = defaultProgress(user.email);
+          await setDoc(ref, { ...progress, rankScore:0, updatedAt: Date.now() });
+        }
+        ui.screen = progress.displayName ? (progress.passed ? 'stage' : (progress.passed===false ? 'testResult' : 'testIntro')) : 'nickname';
+      }catch(e){
+        progress = defaultProgress(user.email);
+        ui.screen = 'nickname';
+        ui.authMsg = { type:'error', text:'Nepodarilo sa načítať uložený postup, začíname odznova: '+e.message };
+      }
+    } else {
+      progress = null;
+      ui.screen = 'login';
+    }
+    render();
+  });
+}
+
+async function sendLoginLink(){
+  if(ui.busy) return;
+  const email = ui.emailInput.trim();
+  if(!email || !email.includes('@')){ ui.authMsg = {type:'error', text:'Zadaj platný email.'}; render(); return; }
+  const actionCodeSettings = { url: window.location.href.split('?')[0], handleCodeInApp: true };
+  ui.busy = true; render();
+  try{
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    window.localStorage.setItem(EMAIL_KEY, email);
+    ui.screen = 'checkEmail';
+    ui.authMsg = null;
+  }catch(e){
+    ui.authMsg = {type:'error', text:'Nepodarilo sa odoslať odkaz: '+e.message};
+  }
+  ui.busy = false;
+  render();
+}
+function backToLogin(){ ui.screen = 'login'; ui.authMsg = null; render(); }
+async function playAsGuest(){
+  if(ui.busy) return;
+  ui.busy = true; render();
+  try{
+    await signInAnonymously(auth);
+  }catch(e){
+    ui.authMsg = {type:'error', text:'Nepodarilo sa spustiť hru ako hosť: '+e.message};
+  }
+  ui.busy = false;
+  render();
+}
+async function doSignOut(){ await signOut(auth); }
+
+/* ================= nickname ================= */
+async function saveNickname(){
+  const name = ui.nameInput.trim();
+  if(!name) return;
+  progress.displayName = name.slice(0,24);
+  await saveProgress();
+  ui.screen = progress.passed ? 'stage' : (progress.passed===false ? 'testResult' : 'testIntro');
+  render();
+}
+
+/* ================= entry test (solo) ================= */
+function beginTest(){
+  progress.testQueue = shuffleArr(TEST_QUESTIONS).map(shuffleQuestionOptions);
+  progress.testIdx = 0;
+  progress.score = 0;
+  ui.revealed = false; ui.pickedOption = null;
+  ui.screen = 'testPlay';
+  render();
+}
+function pickOption(i){ if(ui.revealed) return; ui.pickedOption = ui.pickedOption===i ? null : i; render(); }
+function revealTestQ(){ ui.revealed = true; render(); }
+function continueTest(){
+  const q = progress.testQueue[progress.testIdx];
+  if(ui.pickedOption === q.answer) progress.score += 1;
+  if(progress.testIdx < progress.testQueue.length-1){
+    progress.testIdx++;
+    ui.revealed = false; ui.pickedOption = null;
+    render();
+  } else {
+    progress.entryScore = progress.score;
+    progress.passed = progress.score >= PASS_THRESHOLD;
+    progress.score = 0;
+    progress.testQueue = null;
+    ui.screen = 'testResult';
+    saveProgress();
+    render();
+  }
+}
+
+/* ================= main journey (solo) ================= */
+function currentStop(){ return MAP_STOPS[progress.stopIdx]; }
+function resetAnswerUi(){ ui.revealed=false; ui.pickedOption=null; ui.textAnswer=''; ui.orderPicks=[]; }
+
+/* Each question is "prepared" (options shuffled / word order shuffled / word scrambled) exactly once
+   per visit so the correct answer isn't always in the same spot, but re-renders (pick, reveal) don't
+   reshuffle mid-question. */
+let preparedQCache = { key:null, q:null };
+function prepareQuestion(rawQ, type){
+  if(type==='mc' || type==='finale' || type==='truefalse') return shuffleQuestionOptions(rawQ);
+  if(type==='scramble') return { ...rawQ, scrambled: scrambleWord(rawQ.answer) };
+  if(type==='order') return { ...rawQ, shuffled: shuffleArr(rawQ.words.map((w,i)=>({w,i}))) };
+  return rawQ;
+}
+function getCurrentQuestion(){
+  let rawQ, type, key;
+  if(progress.destination){
+    const dest = DESTINATIONS[progress.destination];
+    const stop = dest.stops[progress.destStopIdx];
+    rawQ = stop.questions[progress.destQIdx];
+    type = 'mc';
+    key = 'dest-'+progress.destStopIdx+'-'+progress.destQIdx;
+  } else {
+    const stop = currentStop();
+    rawQ = stop.questions[progress.qIdx];
+    type = rawQ.type || stop.type;
+    key = 'main-'+progress.stopIdx+'-'+progress.qIdx;
+  }
+  if(preparedQCache.key !== key){
+    preparedQCache = { key, q: prepareQuestion(rawQ, type) };
+  }
+  return { q: preparedQCache.q, type };
+}
+
+function continueJourney(){
+  const stop = currentStop();
+  const { q, type } = getCurrentQuestion();
+  const pv = stop.pointValue || 1;
+  const correct = isAnswerCorrect(type, q);
+  if(correct) progress.score += pv;
+  const st = progress.stopStats[stop.id] || {correct:0,total:0,points:0};
+  st.total++; if(correct){ st.correct++; st.points+=pv; }
+  progress.stopStats[stop.id] = st;
+
+  if(progress.qIdx < stop.questions.length-1){
+    progress.qIdx++;
+  } else if(progress.stopIdx < MAP_STOPS.length-1){
+    progress.stopIdx++;
+    progress.qIdx = 0;
+  } else {
+    progress.reachedAirport = true;
+  }
+  resetAnswerUi();
+  saveProgress();
+  render();
+}
+function chooseDestination(code){
+  const dest = DESTINATIONS[code];
+  progress.destination = code;
+  progress.destStopIdx = 0; progress.destQIdx = 0; progress.destScore = 0; progress.destFinished = false;
+  resetAnswerUi();
+  saveProgress();
+  ui.screen = 'stage';
+  render();
+}
+function declineDestination(){
+  progress.finished = true;
+  saveProgress();
+  ui.screen = 'finish';
+  render();
+}
+function continueDestJourney(){
+  const dest = DESTINATIONS[progress.destination];
+  const stop = dest.stops[progress.destStopIdx];
+  const { q } = getCurrentQuestion();
+  if(isAnswerCorrect('mc', q)) progress.destScore += 1;
+
+  if(progress.destQIdx < stop.questions.length-1){
+    progress.destQIdx++;
+  } else if(progress.destStopIdx < dest.stops.length-1){
+    progress.destStopIdx++;
+    progress.destQIdx = 0;
+  } else {
+    progress.destFinished = true;
+    progress.finished = true;
+  }
+  resetAnswerUi();
+  saveProgress();
+  if(progress.finished){ ui.screen = 'finish'; }
+  render();
+}
+function pickOrderWord(idx){
+  const { q } = getCurrentQuestion();
+  ui.orderPicks.push(q.shuffled[idx].w);
+  render();
+}
+function unpickOrderWord(i){ ui.orderPicks.splice(i,1); render(); }
+
+/* ================= leaderboard ================= */
+let leaderboardCache = [];
+let leaderboardState = 'idle'; // idle | loading | error
+async function loadLeaderboard(){
+  leaderboardState = 'loading';
+  try{
+    const q = query(collection(db,'progress'), orderBy('rankScore','desc'), limit(50));
+    const snap = await getDocs(q);
+    leaderboardCache = snap.docs.map(d=>({ uid:d.id, ...d.data() }));
+    leaderboardState = 'idle';
+  }catch(e){
+    leaderboardState = 'error';
+  }
+}
+async function openLeaderboard(){
+  ui.screen = 'leaderboard';
+  render();
+  await loadLeaderboard();
+  render();
+}
+
+/* ================= render helpers ================= */
+function renderAutoControls(correct, answered, pv, okLabel, badLabel, noneLabel){
+  return `
+    <div class="controls">
+      ${!ui.revealed
+        ? `<button class="btn btn-gold" onclick="app.revealJourney()">Skontrolovať ✓</button>`
+        : `<div class="auto-result ${correct?'ok':'bad'}">${!answered?(noneLabel||'⏭️ Bez odpovede'):(correct?(okLabel||`✅ Správne! +${pv} ${bodWord(pv)}`):(badLabel||'❌ Nesprávne'))}</div>
+           <button class="btn btn-gold" onclick="app.continueStageAuto()">Pokračovať →</button>`}
+    </div>
+  `;
+}
+function renderOptionsBody(type, q, pv){
+  const isTF = type==='truefalse';
+  const answered = ui.pickedOption!==null;
+  const correct = answered && isAnswerCorrect(type, q);
+  return `
+    ${type==='finale' ? `<p class="prompt-sk">${esc(q.label||'')}</p><p class="prompt-main" style="font-size:clamp(20px,5.2vw,50px);word-break:break-word;">${esc(q.word)}</p>`
+      : isTF ? `<p class="prompt-sk">Pravda, alebo nepravda?</p><p class="sentence">${esc(q.statement)}</p>`
+      : `<p class="prompt-sk">Slovenské slovo</p><p class="prompt-main">${esc(q.sk)}</p>`}
+    <div class="options">
+      ${q.options.map((opt,i)=>{
+        let cls='opt';
+        if(ui.revealed && i===q.answer) cls+=' reveal-correct';
+        else if(ui.revealed && i===ui.pickedOption) cls+=' reveal-wrong';
+        else if(!ui.revealed && i===ui.pickedOption) cls+=' picked';
+        return `<button class="${cls}" ${ui.revealed?'disabled':''} onclick="app.pickOption(${i})">${isTF?'':`<span class="letter">${String.fromCharCode(65+i)}</span>`}${esc(opt)}</button>`;
+      }).join('')}
+    </div>
+    ${ui.revealed && q.trapNote ? `<div class="reveal-box"><p class="hint" style="margin:0;">⚠️ ${esc(q.trapNote)}</p></div>` : ''}
+    ${ui.revealed && q.funFact ? `<div class="reveal-box"><div class="answer-pill"><span class="sk" style="font-size:14px;">🎉 ${esc(q.funFact)}</span></div></div>` : ''}
+    ${renderAutoControls(correct, answered, pv, null, null, '⏭️ Bez odpovede — 0 bodov')}
+  `;
+}
+function renderTextBody(type, q, pv){
+  let promptHtml;
+  if(type==='fill'){
+    const parts = q.sentence.split('___');
+    promptHtml = `<p class="prompt-sk">Doplň chýbajúce slovo</p><p class="sentence">${esc(parts[0])}<span class="blank">${ui.revealed?esc(q.answer):'_____'}</span>${esc(parts[1]||'')}</p>`;
+  } else if(type==='riddle'){
+    promptHtml = `<p class="prompt-sk">Anglická hádanka</p><p class="sentence">${esc(q.riddle)}</p>`;
+  } else if(type==='scramble'){
+    promptHtml = `<p class="prompt-sk">Rozlúšti popletené písmenká${q.sk?` (${esc(q.sk)})`:''}</p><p class="scramble-word">${esc(q.scrambled.toUpperCase().split('').join(' '))}</p>`;
+  } else {
+    promptHtml = `<p class="prompt-sk">Čo to znamená po anglicky?</p><p class="prompt-main emoji">${q.emoji}</p>`;
+  }
+  const answered = ui.textAnswer.trim()!=='';
+  const correct = answered && isAnswerCorrect(type, q);
+  return `
+    ${promptHtml}
+    <div class="text-answer-wrap">
+      <input type="text" class="text-answer-input ${ui.revealed?(correct?'ok':'bad'):''}" ${ui.revealed?'disabled':''}
+        placeholder="Napíš odpoveď po anglicky…" value="${esc(ui.textAnswer)}"
+        oninput="app.setTextAnswer(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault(); app.revealJourney();}"
+        autocomplete="off" autocapitalize="off" spellcheck="false" />
+    </div>
+    ${ui.revealed && type!=='fill' ? `<div class="reveal-box"><div class="answer-pill"><span class="en">${esc(q.answer)}</span>${q.sk&&type!=='scramble'?`<span class="sk">${esc(q.sk)}</span>`:''}</div></div>` : ''}
+    ${renderAutoControls(correct, answered, pv)}
+  `;
+}
+function renderOrderBody(q, pv){
+  const pickedSlots = [];
+  ui.orderPicks.forEach(w=>{
+    const slot = q.shuffled.findIndex((item,idx)=>item.w===w && !pickedSlots.includes(idx));
+    if(slot>=0) pickedSlots.push(slot);
+  });
+  const answered = ui.orderPicks.length>0;
+  const correct = answered && isAnswerCorrect('order', q);
+  return `
+    <p class="prompt-sk">Poskladaj vetu v správnom poradí</p>
+    ${q.sk?`<p class="hint" style="text-align:center;margin-top:-8px;">${esc(q.sk)}</p>`:''}
+    <div class="order-answer-row">
+      ${ui.orderPicks.length
+        ? ui.orderPicks.map((w,i)=>`<button class="order-chip picked" ${ui.revealed?'disabled':''} onclick="app.unpickOrderWord(${i})">${esc(w)}</button>`).join('')
+        : '<span class="order-placeholder">Klikaj na slová nižšie v správnom poradí…</span>'}
+    </div>
+    <div class="order-bank">
+      ${q.shuffled.map((item,idx)=>`<button class="order-chip bank" ${pickedSlots.includes(idx)||ui.revealed?'disabled':''} onclick="app.pickOrderWord(${idx})">${esc(item.w)}</button>`).join('')}
+    </div>
+    ${ui.revealed ? `<div class="reveal-box"><div class="answer-pill"><span class="en">${esc(q.words.join(' '))}</span></div></div>` : ''}
+    ${renderAutoControls(correct, answered, pv)}
+  `;
+}
+
+/* ================= screens ================= */
+function renderTopnav(){
+  const nav = document.getElementById('topnav');
+  if(!currentUser){ nav.innerHTML = ''; return; }
+  const isGuest = currentUser.isAnonymous;
+  const name = progress && progress.displayName ? progress.displayName : (isGuest ? 'Hosť' : currentUser.email);
+  nav.innerHTML = `
+    <span class="who">
+      <span class="who-avatar" style="background:${avatarColor(currentUser.uid)};">${initials(name)}</span>
+      <b>${esc(name)}</b>${isGuest ? ' <span style="opacity:.75;">(hosť — postup sa neuloží)</span>' : ''}
+    </span>
+    <button class="btn btn-sm" onclick="app.goPlay()">▶️ Hrať</button>
+    ${progress ? `<button class="btn btn-sm" onclick="app.openMap()">🗺️ Mapa</button>` : ''}
+    <button class="btn btn-sm" onclick="app.openLeaderboard()">🏆 Rebríček</button>
+    ${isGuest ? `<button class="btn btn-sm btn-gold" onclick="app.doSignOut()">✉️ Prihlásiť sa a uložiť postup</button>` : `<button class="btn btn-sm" onclick="app.doSignOut()">Odhlásiť sa</button>`}
+  `;
+}
+function goPlay(){
+  ui.screen = !progress.displayName ? 'nickname' : (progress.passed===null ? 'testIntro' : (progress.passed===false ? 'testResult' : 'stage'));
+  render();
+}
+
+function renderLogin(){
+  return `
+    <div class="panel">
+      <div class="intro-icon" style="margin:0 auto 18px;">🗺️</div>
+      <h2 class="section-title" style="text-align:center;">Prihlásenie</h2>
+      <p class="hint" style="text-align:center;">Zadaj svoj email — pošleme ti prihlasovací odkaz. Žiadne heslo netreba.</p>
+      ${ui.authMsg ? `<div class="msg ${ui.authMsg.type}">${esc(ui.authMsg.text)}</div>` : ''}
+      <div class="field">
+        <label>Email</label>
+        <input type="email" placeholder="tvoj@email.sk" value="${esc(ui.emailInput)}" oninput="app.setEmailInput(this.value)" onkeydown="if(event.key==='Enter') app.sendLoginLink();" />
+      </div>
+      <button class="btn btn-gold" style="width:100%;" ${ui.busy?'disabled':''} onclick="app.sendLoginLink()">${ui.busy?'Odosielam…':'Poslať prihlasovací odkaz ✉️'}</button>
+      <div class="or-divider"><span>alebo</span></div>
+      <button class="btn" style="width:100%;" ${ui.busy?'disabled':''} onclick="app.playAsGuest()">▶ Vyskúšať hru bez prihlásenia</button>
+      <p class="hint" style="text-align:center;margin:10px 0 0;font-size:12.5px;">Ako hosť si zahráš hneď, ale tvoj postup sa neuloží ani nebude v rebríčku. Email treba len na uloženie a porovnanie s ostatnými.</p>
+    </div>
+  `;
+}
+function renderCheckEmail(){
+  return `
+    <div class="panel intro-wrap">
+      <div class="intro-icon">📬</div>
+      <h2>Skontroluj si email</h2>
+      <p>Poslali sme odkaz na prihlásenie na <b>${esc(ui.emailInput)}</b>. Klikni naň (na tomto istom zariadení) a budeš prihlásený/á.</p>
+      <button class="btn" onclick="app.backToLogin()">← Zadať iný email</button>
+    </div>
+  `;
+}
+function renderNickname(){
+  const isGuest = currentUser && currentUser.isAnonymous;
+  return `
+    <div class="panel">
+      <div class="intro-icon" style="margin:0 auto 18px;">✍️</div>
+      <h2 class="section-title" style="text-align:center;">${isGuest ? 'Ako ťa máme volať?' : 'Ako ťa majú vidieť ostatní hráči?'}</h2>
+      <p class="hint" style="text-align:center;">${isGuest ? 'Len pre toto herné sedenie — nikde sa neuloží.' : 'Toto meno sa zobrazí v rebríčku (email zostáva súkromný).'}</p>
+      <div class="field">
+        <label>Zobrazované meno</label>
+        <input type="text" maxlength="24" placeholder="napr. Rado" value="${esc(ui.nameInput)}" oninput="app.setNameInput(this.value)" onkeydown="if(event.key==='Enter') app.saveNickname();" />
+      </div>
+      <button class="btn btn-gold" style="width:100%;" onclick="app.saveNickname()">Pokračovať ▶</button>
+    </div>
+  `;
+}
+function renderTestIntro(){
+  return `
+    <div class="panel intro-wrap">
+      <div class="intro-icon">📝</div>
+      <span class="rk">Krok 1</span>
+      <h2>Vstupný test</h2>
+      <p>16 otázok, aby sme zistili tvoju úroveň. Vyber odpoveď, systém ju sám vyhodnotí.</p>
+      <p class="threshold-note">Na odomknutie mapy potrebuješ aspoň <b>${PASS_THRESHOLD}/16</b> bodov.</p>
+      <button class="btn btn-gold" style="margin-top:10px;padding:14px 30px;font-size:16px;" onclick="app.beginTest()">Spustiť test ▶</button>
+    </div>
+  `;
+}
+function renderTestPlay(){
+  const q = progress.testQueue[progress.testIdx];
+  const pct = Math.round((progress.testIdx/progress.testQueue.length)*100);
+  return `
+    <div class="qmeta" style="justify-content:center;margin-bottom:6px;">
+      <span class="pill">📝 Vstupný test</span>
+      <span class="pill">Otázka ${progress.testIdx+1} / ${progress.testQueue.length}</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+    <div class="panel stage-card" style="margin-top:16px;">
+      <p class="prompt-sk">Slovenské slovo</p>
+      <p class="prompt-main">${esc(q.sk)}</p>
+      <div class="options">
+        ${q.options.map((opt,i)=>{
+          let cls='opt';
+          if(ui.revealed && i===q.answer) cls+=' reveal-correct';
+          else if(ui.revealed && i===ui.pickedOption) cls+=' reveal-wrong';
+          else if(!ui.revealed && i===ui.pickedOption) cls+=' picked';
+          return `<button class="${cls}" ${ui.revealed?'disabled':''} onclick="app.pickOption(${i})"><span class="letter">${String.fromCharCode(65+i)}</span>${esc(opt)}</button>`;
+        }).join('')}
+      </div>
+      <div class="controls">
+        ${!ui.revealed
+          ? `<button class="btn btn-gold" onclick="app.revealTestQ()">Zobraz odpoveď 👁</button>`
+          : `<div class="auto-result ${ui.pickedOption===q.answer?'ok':'bad'}">${ui.pickedOption===q.answer?'✅ Správne! +1 bod':(ui.pickedOption===null?'⏭️ Bez odpovede':'❌ Nesprávne')}</div>
+             <button class="btn btn-gold" onclick="app.continueTest()">Pokračovať →</button>`}
+      </div>
+    </div>
+  `;
+}
+function renderTestResult(){
+  const passed = progress.passed;
+  return `
+    <div class="panel intro-wrap">
+      <div class="intro-icon">${passed?'🎉':'📚'}</div>
+      <h2>${passed?'Test si zvládol/-la!':'Tentokrát to nevyšlo'}</h2>
+      <div class="results-list">
+        <div class="stat-row"><span>Tvoj výsledok</span><span><b>${progress.entryScore}/16</b> ${passed?`<span class="badge pass">postúpil/-la</span>`:`<span class="badge fail">skús znova</span>`}</span></div>
+      </div>
+      ${passed
+        ? `<button class="btn btn-gold" style="padding:14px 30px;font-size:16px;" onclick="app.startJourney()">Vyraziť na mapu ▶</button>`
+        : `<button class="btn btn-gold" style="padding:14px 30px;font-size:16px;" onclick="app.beginTest()">Skúsiť test znova ↺</button>`}
+    </div>
+  `;
+}
+function startJourney(){ ui.screen='stage'; render(); }
+
+function renderZoneSteps(){
+  const curIdx = progress.reachedAirport ? MAP_STOPS.length : progress.stopIdx;
+  return `
+    <div class="journey-path">
+      ${ZONES.map(z=>{
+        const zoneIdxs = MAP_STOPS.map((s,i)=>s.zone===z.id?i:-1).filter(i=>i>=0);
+        const lastIdx = zoneIdxs[zoneIdxs.length-1];
+        const isCurrent = zoneIdxs.includes(curIdx);
+        const isDone = curIdx > lastIdx;
+        return `<div class="jp-node ${isCurrent?'current':(isDone?'done':'')}" style="--zc:${z.color};">
+          <div class="jp-dot">${isDone && !isCurrent ? '✓' : z.icon}</div>
+          <div class="jp-label">${esc(z.label)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function revealJourney(){ ui.revealed = true; render(); }
+function setTextAnswer(v){ ui.textAnswer = v; }
+
+function renderStage(){
+  if(progress.reachedAirport && !progress.destination){ return renderDestChoice(); }
+  if(progress.finished){ return renderFinish(); }
+
+  const { q, type } = getCurrentQuestion();
+  let stop, pv, idx, total, title, badgeIcon, badgeColor;
+  if(progress.destination){
+    const dest = DESTINATIONS[progress.destination];
+    stop = dest.stops[progress.destStopIdx];
+    pv = 1; idx = progress.destQIdx; total = stop.questions.length;
+    title = `${dest.flag.replace(/<[^>]+>/g,'')} ${dest.name} · ${stop.icon} ${esc(stop.title)}`;
+    badgeIcon = stop.icon; badgeColor = DEST_COLORS[progress.destination] || 'var(--gold)';
+  } else {
+    stop = currentStop();
+    pv = stop.pointValue || 1; idx = progress.qIdx; total = stop.questions.length;
+    const zone = zoneOf(stop.zone);
+    title = `${zone.icon} ${esc(zone.label)} · ${stop.icon} ${esc(stop.title)}`;
+    badgeIcon = stop.icon; badgeColor = zone.color;
+  }
+  const pct = Math.round((idx/total)*100);
+  const mech = (type==='mc'||type==='finale'||type==='truefalse') ? 'options' : (type==='order' ? 'order' : 'text');
+  const overallPct = journeyProgressPct(progress);
+  const maxScore = progress.destination ? destTotal(progress.destination) : MAP_TOTAL;
+  const curScore = progress.destination ? progress.destScore : progress.score;
+
+  return `
+    ${!progress.destination ? renderZoneSteps() : ''}
+    <div class="qmeta" style="justify-content:center;margin:10px 0 6px;">
+      <span class="pill">${title}</span>
+      <span class="pill">Otázka ${idx+1} / ${total}</span>
+      <span class="pill">Skóre: ${curScore} / ${maxScore}</span>
+      <span class="pill">Celkový postup: ${overallPct}%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+    <div class="panel stage-card" style="margin-top:16px;">
+      <div class="stage-zone-badge" style="--zc:${badgeColor};">${badgeIcon}</div>
+      ${mech==='options' ? renderOptionsBody(type,q,pv) : mech==='order' ? renderOrderBody(q,pv) : renderTextBody(type,q,pv)}
+    </div>
+    <div class="controls no-print">
+      <button class="btn" onclick="app.openMap()">🗺️ Mapa</button>
+      <button class="btn" onclick="app.openLeaderboard()">🏆 Rebríček</button>
+    </div>
+  `;
+}
+function continueStageAuto(){
+  if(progress.destination){ continueDestJourney(); } else { continueJourney(); }
+}
+
+function renderDestChoice(){
+  return `
+    <div class="panel">
+      <h2 class="section-title" style="text-align:center;">✈️ Dosiahol/-la si letisko!</h2>
+      <p class="hint" style="text-align:center;">Chceš pokračovať do zahraničia, alebo tu cestu ukončiť?</p>
+      <div class="dest-choice-grid">
+        ${Object.values(DESTINATIONS).map(d=>`
+          <div class="dest-choice-card" style="--dc:${DEST_COLORS[d.code]};">
+            <div class="dtop"></div>
+            <div class="flag">${d.flag}</div>
+            <div class="dname">${esc(d.name)}</div>
+            <button class="btn btn-gold" onclick="app.chooseDestination('${d.code}')">Vybrať</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="controls" style="margin-top:20px;">
+        <button class="btn" onclick="app.declineDestination()">🏁 Ukončiť cestu tu</button>
+      </div>
+    </div>
+  `;
+}
+function renderFinish(){
+  return `
+    <div class="panel finish-wrap">
+      <div class="intro-icon" style="margin:0 auto;">🏆</div>
+      <h2 class="section-title" style="margin-top:16px;">Cesta dokončená!</h2>
+      <p class="hint">Angličtina: <b>${progress.score} / ${MAP_TOTAL}</b>${progress.destination?`, ${DESTINATIONS[progress.destination].name}: <b>${progress.destScore} / ${destTotal(progress.destination)}</b>`:''}</p>
+      <div class="controls">
+        <button class="btn btn-gold" style="padding:14px 30px;font-size:16px;" onclick="app.showDiploma()">🎓 Zobraziť diplom</button>
+        <button class="btn" style="padding:14px 30px;font-size:16px;" onclick="app.openLeaderboard()">Pozrieť rebríček 🏆</button>
+      </div>
+    </div>
+  `;
+}
+function showDiploma(){ ui.screen='diploma'; render(); }
+function backToEnd(){ ui.screen='finish'; render(); }
+function renderDiploma(){
+  const name = progress.displayName || 'Hráč';
+  const dateStr = new Date().toLocaleDateString('sk-SK', { year:'numeric', month:'long', day:'numeric' });
+  const destLine = progress.destination
+    ? ` Následne pokračoval/-la do destinácie <b>${esc(DESTINATIONS[progress.destination].name)}</b>, kde získal/-a <b>${progress.destScore} / ${destTotal(progress.destination)}</b> ${bodWord(progress.destScore)}.`
+    : '';
+  return `
+    <div class="diploma-page">
+      <div class="diploma-card">
+        <div class="diploma-crest"><span class="leaf left">🌿</span><span style="font-size:34px;">🎓</span><span class="leaf">🌿</span></div>
+        <p class="dip-eyebrow">Teacher Quiz Online</p>
+        <h2>Diplom</h2>
+        <div class="dip-body">
+          Tento diplom potvrdzuje, že
+          <span class="dip-name">${esc(name)}</span>
+          úspešne prešiel/-la celou mapou Teacher Quiz Online — od domu až po letisko — so ziskom
+          <span class="dip-score">${progress.score} / ${MAP_TOTAL} bodov</span>.
+          ${destLine}
+        </div>
+        <div class="diploma-foot">
+          <div class="date">${dateStr}</div>
+          <div class="sig">Teacher Quiz Online<span class="sig-label">Systém</span></div>
+        </div>
+      </div>
+      <div class="controls no-print">
+        <button class="btn btn-gold" onclick="window.print()">Vytlačiť diplom 🖨</button>
+        <button class="btn" onclick="app.backToEnd()">Späť na výsledky</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderLeaderboard(){
+  const rows = leaderboardCache.map((p,i)=>{
+    const isMe = currentUser && p.uid===currentUser.uid;
+    const destFlag = p.destination ? DESTINATIONS[p.destination].flag : '';
+    const pct = Math.max(4, Math.min(100, Math.round(((p.stopIdx||0) / MAP_STOPS.length) * 100 + (p.reachedAirport?100:0))));
+    const rankCls = i===0?'rank-1':(i===1?'rank-2':(i===2?'rank-3':''));
+    return `
+      <li class="lb-row ${isMe?'me':''} ${i<3?'top3':''} ${rankCls}">
+        <span class="lb-rank">${i+1}</span>
+        <span class="lb-avatar" style="background:${avatarColor(p.uid)};">${initials(p.displayName||p.email||'?')}</span>
+        <span class="lb-main">
+          <span class="lb-name">${esc(p.displayName||p.email||'Hráč')} ${destFlag}</span>
+          <span class="lb-loc">${locationLabel(p)}</span>
+          <span class="lb-bar"><span class="lb-bar-fill" style="width:${pct}%;"></span></span>
+        </span>
+        <span class="lb-score">${(p.score||0)+(p.destScore||0)}</span>
+      </li>
+    `;
+  }).join('');
+  let body;
+  if(leaderboardState==='loading' && !leaderboardCache.length){
+    body = `<p class="hint">Načítavam rebríček…</p>`;
+  } else if(leaderboardState==='error'){
+    body = `<div class="msg error">Rebríček sa nepodarilo načítať. Skús to prosím znova.</div><button class="btn btn-sm" onclick="app.openLeaderboard()">↺ Skúsiť znova</button>`;
+  } else {
+    body = `<ul class="lb-list">${rows || '<li class="hint">Zatiaľ nikto nehral.</li>'}</ul>`;
+  }
+  return `
+    <div class="panel">
+      <h2 class="section-title">🏆 Rebríček — najďalej dosiahli</h2>
+      <p class="hint">Zoradené podľa toho, ako ďaleko sa hráč dostal. Vlajka = zvolená destinácia.</p>
+      ${body}
+      <div class="controls">
+        <button class="btn btn-gold" onclick="app.goPlay()">🗺️ Späť do hry</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ================= map overlay ================= */
+function openMap(){ ui.mapReturnScreen = ui.screen; ui.screen = 'map'; render(); }
+function closeMap(){ ui.screen = ui.mapReturnScreen || 'stage'; render(); }
+function myMapLocation(){
+  if(!progress) return null;
+  if(progress.destination) return { kind:'dest', code:progress.destination };
+  if(progress.reachedAirport) return { kind:'zone', id:'letisko' };
+  if(progress.passed===false || progress.passed===null) return { kind:'none' };
+  const stop = currentStop();
+  return stop ? { kind:'zone', id:stop.zone } : { kind:'zone', id:'letisko' };
+}
+function zoneProgress(zoneId){
+  const stops = MAP_STOPS.filter(s=>s.zone===zoneId);
+  const firstIdx = MAP_STOPS.indexOf(stops[0]);
+  const lastIdx = MAP_STOPS.indexOf(stops[stops.length-1]);
+  const curIdx = progress.reachedAirport ? MAP_STOPS.length : progress.stopIdx;
+  let state = curIdx > lastIdx ? 'done' : (curIdx >= firstIdx && curIdx <= lastIdx ? 'current' : 'locked');
+  let correct=0, total=0;
+  stops.forEach(s=>{ const st=progress.stopStats[s.id]; if(st){ correct+=st.correct; total+=st.total; } });
+  let pct;
+  if(state==='done') pct = total>0 ? Math.round((correct/total)*100) : 100;
+  else if(state==='current'){
+    const stopsBeforeCurrent = stops.filter(s=>MAP_STOPS.indexOf(s)<progress.stopIdx);
+    const doneQ = stopsBeforeCurrent.reduce((sum,s)=>sum+s.questions.length,0) + progress.qIdx;
+    const totalQ = stops.reduce((sum,s)=>sum+s.questions.length,0);
+    pct = totalQ>0 ? Math.round((doneQ/totalQ)*100) : 0;
+  } else pct = 0;
+  return { state, pct, correct, total };
+}
+function stopProgressInfo(stop){
+  const idxInMap = MAP_STOPS.indexOf(stop);
+  const curIdx = progress.reachedAirport ? MAP_STOPS.length : progress.stopIdx;
+  const st = progress.stopStats[stop.id];
+  if(idxInMap < curIdx || progress.reachedAirport){
+    const total = st ? st.total : stop.questions.length;
+    const correct = st ? st.correct : stop.questions.length;
+    return { state:'done', label:`${correct}/${total} správne (${total?Math.round((correct/total)*100):100}%)`, pct: total?Math.round((correct/total)*100):100 };
+  }
+  if(idxInMap === curIdx){
+    const pct = Math.round((progress.qIdx/stop.questions.length)*100);
+    return { state:'current', label:`prebieha — otázka ${progress.qIdx+1}/${stop.questions.length}`, pct };
+  }
+  return { state:'locked', label:'ešte nezačaté', pct:0 };
+}
+function openZoneDetail(zoneId){ ui.pinDetail = zoneId; renderPinDetailOverlay(); }
+function closePinDetail(){ ui.pinDetail = null; renderPinDetailOverlay(); }
+function renderPinDetailOverlay(){
+  let host = document.getElementById('mapOverlay');
+  if(!ui.pinDetail){ if(host) host.innerHTML=''; return; }
+  const zone = zoneOf(ui.pinDetail);
+  const stops = MAP_STOPS.filter(s=>s.zone===zone.id);
+  const rows = stops.map(s=>{
+    const info = stopProgressInfo(s);
+    return `
+      <div class="stop-detail ${info.state}">
+        <div class="stop-detail-head">${s.icon} ${esc(s.title)}${s.pointValue&&s.pointValue>1?` <span class="stop-detail-pv">(×${s.pointValue} ${bodWord(s.pointValue)})</span>`:''}</div>
+        <div class="stop-detail-bar"><div class="stop-detail-fill ${info.state}" style="width:${info.pct}%;"></div></div>
+        <div class="stop-detail-status">${info.label}</div>
+      </div>
+    `;
+  }).join('');
+  host.innerHTML = `
+    <div class="modal-backdrop" onclick="app.closePinDetail()">
+      <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-head">
+          <h3>${zone.icon} ${esc(zone.label)}</h3>
+          <button class="mini-btn" onclick="app.closePinDetail()" title="Zavrieť">✕</button>
+        </div>
+        ${rows}
+      </div>
+    </div>
+  `;
+}
+function renderMapPage(){
+  const me = myMapLocation();
+  const myUid = currentUser ? currentUser.uid : 'me';
+  const myName = progress.displayName || 'Ty';
+
+  const pins = ZONES.map(z=>{
+    const zp = zoneProgress(z.id);
+    const isCurrent = me.kind==='zone' && me.id===z.id;
+    return `
+      <div class="map-pin ${isCurrent?'is-me':''} ${zp.state==='done'?'is-done':''}" style="left:${z.x}%;top:${(z.y/56*100)}%;--zc:${z.color};"
+        onclick="app.openZoneDetail('${z.id}')" role="button" tabindex="0" title="Klikni pre detail">
+        <div class="map-pin-drop"><span class="pin-scallop"></span><span class="map-pin-emoji">${zp.state==='done'?'✓':z.icon}</span></div>
+        <div class="map-pin-pct ${zp.state}">${zp.state==='locked'?'🔒':zp.pct+'%'}</div>
+        <div class="map-pin-shadow"></div>
+        <div class="map-pin-label">${esc(z.label)}</div>
+        ${isCurrent ? `<div class="map-pin-avatar" style="background:${avatarColor(myUid)};" title="${esc(myName)}">${initials(myName)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  const destBadges = Object.values(DESTINATIONS).map(d=>{
+    const isCurrent = me.kind==='dest' && me.code===d.code;
+    const isDone = progress.destFinished && me.code===d.code;
+    return `
+      <div class="dest-badge ${isCurrent?'is-me-dest':''}">
+        <div class="flag">${d.flag}</div>
+        <div class="dtext">
+          <div class="dlabel">${esc(d.name)}</div>
+          <div class="dstatus">${isDone?'🏁 hotovo':(isCurrent?'✈️ si tu':'🔓 odomknuté na letisku')}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const remaining = questionsRemainingInCurrentStop();
+  const overallPct = journeyProgressPct(progress);
+  const whereText = progress.destination
+    ? `${DESTINATIONS[progress.destination].flag.replace(/<[^>]+>/g,'')} ${DESTINATIONS[progress.destination].name}`
+    : (progress.reachedAirport ? '✈️ Letisko' : (currentStop() ? `${zoneOf(currentStop().zone).icon} ${esc(currentStop().title)}` : '—'));
+
+  return `
+    <div class="panel">
+      <div class="map-summary">
+        <div class="map-summary-item"><span class="ms-label">Si tu</span><span class="ms-value">${whereText}</span></div>
+        <div class="map-summary-item"><span class="ms-label">Chýba do ďalšej zastávky</span><span class="ms-value">${remaining} ${remaining===1?'otázka':(remaining>=2&&remaining<=4?'otázky':'otázok')}</span></div>
+        <div class="map-summary-item"><span class="ms-label">Celkový postup</span><span class="ms-value">${overallPct}%</span></div>
+      </div>
+      <div class="terrain-map-frame map-page-frame">
+        <div class="terrain-map">
+          <div class="terrain-clouds"></div>
+          <span class="terrain-compass">🧭</span>
+          <div class="sk-ribbon"><span class="flag-chip flag-sk"></span><span class="sr-label">Slovensko</span></div>
+          <svg class="terrain-svg" viewBox="0 0 100 56" preserveAspectRatio="none">
+            <defs>
+              <marker id="mapArrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="3.2" markerHeight="3.2" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="#a6875a" />
+              </marker>
+            </defs>
+            <path class="terrain-border" d="M-2,6 C12,14 22,4 38,16 C52,26 58,10 74,18 C84,24 92,12 102,20" />
+            <path class="terrain-border" d="M-2,50 C14,40 26,46 42,36 C58,26 68,34 84,26 C92,22 98,26 102,22" />
+            <path class="terrain-path-shadow" d="${TERRAIN_PATH}" transform="translate(0.4,0.6)" />
+            <path class="terrain-path-shadow" d="M90,16 C93,10 96,8 98,10" transform="translate(0.4,0.6)" />
+            <path class="terrain-path" d="${TERRAIN_PATH}" marker-end="url(#mapArrow)" />
+            <path class="terrain-branch" d="M90,16 C93,10 96,8 98,10" marker-end="url(#mapArrow)" />
+          </svg>
+          ${pins}
+        </div>
+      </div>
+      <div class="dest-strip-wrap">
+        <p class="dest-strip-title"><span class="arrow">✈️→</span> Destinácie z letiska</p>
+        <div class="dest-strip">${destBadges}</div>
+      </div>
+      <div class="map-legend">
+        <span><span class="legend-dot" style="box-shadow:0 0 0 3px rgba(73,180,124,.3);border-color:var(--correct);"></span> si tu práve teraz</span>
+        <span>Číslo pri pine = % úspešnosti v tej zóne</span>
+        <span>Klikni na pin pre podrobný rozpis podľa zastávok</span>
+      </div>
+      <div class="controls">
+        <button class="btn btn-gold" onclick="app.closeMap()">← Späť do hry</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ================= main render ================= */
+function render(){
+  const el = document.getElementById('app');
+  renderTopnav();
+  let html = '';
+  if(ui.screen==='loading') html = `<div class="panel intro-wrap"><p>Načítavam…</p></div>`;
+  else if(ui.screen==='login') html = renderLogin();
+  else if(ui.screen==='checkEmail') html = renderCheckEmail();
+  else if(ui.screen==='nickname') html = renderNickname();
+  else if(ui.screen==='testIntro') html = renderTestIntro();
+  else if(ui.screen==='testPlay') html = renderTestPlay();
+  else if(ui.screen==='testResult') html = renderTestResult();
+  else if(ui.screen==='stage') html = renderStage();
+  else if(ui.screen==='finish') html = renderFinish();
+  else if(ui.screen==='leaderboard') html = renderLeaderboard();
+  else if(ui.screen==='diploma') html = renderDiploma();
+  else if(ui.screen==='map') html = renderMapPage();
+  el.innerHTML = html;
+  renderPinDetailOverlay();
+}
+
+/* ================= expose to window (onclick handlers) ================= */
+window.app = {
+  setEmailInput:(v)=>{ ui.emailInput=v; },
+  setNameInput:(v)=>{ ui.nameInput=v; },
+  sendLoginLink, playAsGuest, backToLogin, saveNickname, beginTest, pickOption, revealTestQ, continueTest,
+  startJourney, revealJourney, setTextAnswer, pickOrderWord, unpickOrderWord, continueStageAuto,
+  chooseDestination, declineDestination, openLeaderboard, goPlay, doSignOut,
+  openMap, closeMap, showDiploma, backToEnd, openZoneDetail, closePinDetail,
+  __testFirestore: async ()=>{
+    try{
+      const ref = doc(db, 'progress', 'connectivity-test');
+      await getDoc(ref);
+      return 'ok: reachable (read allowed or doc simply empty)';
+    }catch(e){ return 'error: '+e.code+' '+e.message; }
+  },
+};
+
+handleAuthEntry();
+</script>
+</body>
+</html>
