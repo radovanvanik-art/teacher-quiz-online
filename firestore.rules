@@ -7,5 +7,11 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == uid;
     }
+
+    // Vianočný kvíz (kapustnica) — bez prihlasovania, hostia len otvoria link.
+    // Otvorené len pre tento jeden dokument/zbierku, nič iné z projektu.
+    match /kapustnica_kviz/{document=**} {
+      allow read, write: if true;
+    }
   }
 }

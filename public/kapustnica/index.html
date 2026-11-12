@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finančno-realitný Vianočný Kvíz</title>
+<style>
+  :root{
+    --bg-deep:#0b2318;
+    --bg-panel:#123a27;
+    --bg-card:#174a31;
+    --gold:#e2b94b;
+    --gold-light:#f3d88a;
+    --red:#c1443b;
+    --red-light:#e2685e;
+    --cream:#f6efe0;
+    --muted:#a9c5b4;
+    --green-accent:#2f8f5b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Segoe UI',Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at top,#163f29 0%,var(--bg-deep) 60%);
+    color:var(--cream);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  .snowfield{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .snow{position:absolute;top:-10px;color:rgba(255,255,255,.75);font-size:14px;animation:fall linear infinite;}
+  @keyframes fall{
+    0%{transform:translateY(-10px) translateX(0);opacity:0;}
+    10%{opacity:.9;}
+    100%{transform:translateY(110vh) translateX(20px);opacity:.2;}
+  }
+  .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:18px 16px 60px;}
+  header.top{text-align:center;margin-bottom:18px;}
+  header.top h1{
+    font-size:clamp(22px,4vw,34px);
+    margin:0 0 4px;
+    color:var(--gold-light);
+    text-shadow:0 2px 10px rgba(0,0,0,.4);
+    letter-spacing:.5px;
+  }
+  header.top p{margin:0;color:var(--muted);font-size:14px;}
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .panel{
+    background:linear-gradient(160deg,var(--bg-panel),var(--bg-card));
+    border:1px solid rgba(226,185,75,.25);
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;justify-content:center;
+    background:linear-gradient(160deg,var(--gold-light),var(--gold));
+    color:#2b1d05;
+    border:none;border-radius:10px;
+    padding:12px 20px;
+    font-size:15px;font-weight:700;
+    cursor:pointer;
+    box-shadow:0 4px 0 rgba(0,0,0,.25);
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25);}
+  .btn.secondary{background:linear-gradient(160deg,#2c6b46,#1c4e32);color:var(--cream);}
+  .btn.danger{background:linear-gradient(160deg,var(--red-light),var(--red));color:#2a0906;}
+  .btn.ghost{background:transparent;border:1px solid rgba(246,239,224,.35);color:var(--cream);box-shadow:none;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+
+  /* SETUP */
+  .team-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .team-row input[type=text]{
+    flex:1;padding:10px 12px;border-radius:8px;border:1px solid rgba(246,239,224,.25);
+    background:rgba(0,0,0,.2);color:var(--cream);font-size:15px;
+  }
+  .team-swatch{width:26px;height:26px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.4);}
+  .remove-team{background:none;border:none;color:var(--red-light);font-size:20px;cursor:pointer;line-height:1;padding:4px 8px;}
+  .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+  @media (max-width:640px){.setup-grid{grid-template-columns:1fr;}}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
+  .field input[type=number]{
+    width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(246,239,224,.25);
+    background:rgba(0,0,0,.2);color:var(--cream);font-size:15px;
+  }
+  .rules-box{background:rgba(0,0,0,.2);border-radius:10px;padding:14px 16px;margin-top:16px;font-size:14px;line-height:1.55;color:var(--muted);}
+  .rules-box b{color:var(--gold-light);}
+
+  /* BOARD */
+  .round-banner{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+    margin-bottom:16px;
+  }
+  .round-banner h2{margin:0;font-size:20px;color:var(--gold-light);}
+  .round-banner.mini{margin-bottom:10px;}
+  .btn-tiny{padding:6px 12px;font-size:12px;margin-left:auto;box-shadow:none;}
+  .diff-pill{
+    padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700;
+  }
+  .diff-1{background:#2f8f5b33;color:#7fe3ac;border:1px solid #2f8f5b;}
+  .diff-2{background:#e2b94b33;color:var(--gold-light);border:1px solid var(--gold);}
+  .diff-3{background:#d9792333;color:#ffb067;border:1px solid #d97923;}
+  .diff-4{background:#c1443b33;color:var(--red-light);border:1px solid var(--red);}
+
+  .progress-track{height:8px;border-radius:6px;background:rgba(0,0,0,.3);overflow:hidden;margin-bottom:18px;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--green-accent),var(--gold));transition:width .4s ease;}
+
+  .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media (max-width:760px){.cat-grid{grid-template-columns:repeat(2,1fr);}}
+  .cat-card{
+    background:linear-gradient(160deg,var(--bg-card),var(--bg-panel));
+    border:1px solid rgba(226,185,75,.25);
+    border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease;
+    position:relative;
+  }
+  .cat-card:hover{transform:translateY(-3px);border-color:var(--gold);}
+  .cat-card.done{opacity:.4;cursor:default;}
+  .cat-card.done:hover{transform:none;}
+  .cat-card.preview{cursor:default;opacity:.35;}
+  .cat-card.preview:hover{transform:none;border-color:rgba(226,185,75,.25);}
+  .cat-card.preview.current{opacity:1;border-color:var(--gold);box-shadow:0 0 18px rgba(226,185,75,.35);}
+  .cat-icon{font-size:30px;margin-bottom:6px;}
+  .cat-name{font-size:14px;font-weight:700;color:var(--cream);}
+  .cat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+  .check{position:absolute;top:8px;right:10px;color:#7fe3ac;font-size:16px;}
+
+  .score-strip{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;}
+  .score-chip{
+    flex:1;min-width:120px;background:rgba(0,0,0,.25);border-radius:10px;padding:10px 12px;
+    display:flex;align-items:center;gap:8px;border:1px solid rgba(246,239,224,.12);
+  }
+  .score-chip .dot{width:12px;height:12px;border-radius:50%;flex:none;}
+  .score-chip .nm{font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .score-chip .pt{font-size:15px;font-weight:800;color:var(--gold-light);}
+
+  /* QUESTION */
+  .q-header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .q-cat{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .timer-box{display:flex;align-items:center;gap:10px;}
+  .timer-num{font-size:26px;font-weight:800;color:var(--gold-light);min-width:48px;text-align:center;}
+  .timer-track{width:140px;height:10px;border-radius:6px;background:rgba(0,0,0,.35);overflow:hidden;}
+  .timer-fill{height:100%;background:linear-gradient(90deg,#7fe3ac,var(--gold),var(--red));transition:width .25s linear;}
+
+  .q-text{font-size:clamp(18px,2.6vw,24px);font-weight:700;margin:14px 0 18px;line-height:1.4;color:var(--cream);}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;}
+  @media (max-width:640px){.opts{grid-template-columns:1fr;}}
+  .opt{
+    background:rgba(0,0,0,.22);border:1px solid rgba(246,239,224,.18);border-radius:10px;
+    padding:12px 14px;font-size:15px;display:flex;gap:10px;align-items:flex-start;
+  }
+  .opt .letter{font-weight:800;color:var(--gold-light);}
+  .opt.correct-reveal{border-color:#7fe3ac;background:rgba(47,143,91,.28);}
+  .opt.correct-reveal .letter{color:#7fe3ac;}
+
+  .answer-box{display:none;margin-top:10px;background:rgba(47,143,91,.18);border:1px solid #2f8f5b;border-radius:10px;padding:12px 14px;font-size:14px;color:#d7f5e3;}
+  .answer-box.show{display:block;}
+
+  .buzz-banner{
+    display:none;text-align:center;padding:14px;border-radius:12px;margin:14px 0;
+    font-size:20px;font-weight:800;letter-spacing:.5px;
+    animation:pulse 1s ease-in-out infinite;
+  }
+  .buzz-banner.show{display:block;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.015);}}
+
+  .buzzers{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:18px;}
+  @media (max-width:560px){
+    .buzzers{grid-template-columns:repeat(2,1fr);gap:12px;}
+  }
+  .buzzer{
+    position:relative;border-radius:16px;padding:20px 10px;text-align:center;cursor:pointer;
+    border:none; color:#fff; font-weight:800; font-size:17px; line-height:1.25;
+    min-height:78px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px;
+    transition:transform .07s ease, filter .15s ease, box-shadow .07s ease;
+    user-select:none; -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+    box-shadow:0 5px 0 rgba(0,0,0,.32), 0 8px 18px rgba(0,0,0,.28);
+  }
+  .buzzer:active{transform:translateY(4px) scale(.98); box-shadow:0 1px 0 rgba(0,0,0,.32), 0 3px 8px rgba(0,0,0,.22);}
+  .buzzer-name{
+    max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .buzzer .key{
+    display:inline-block;font-size:12px;font-weight:800;letter-spacing:.3px;
+    background:rgba(0,0,0,.28);padding:3px 10px;border-radius:999px;opacity:.95;
+  }
+  .buzzer.excluded{opacity:.3;filter:grayscale(.6);cursor:not-allowed;box-shadow:none;}
+  .buzzer.excluded:active{transform:none;}
+  .buzzer.winner{box-shadow:0 0 0 3px var(--gold-light), 0 0 26px var(--gold-light);}
+  .buzzer.disabledstate{opacity:.5;cursor:not-allowed;}
+
+  .judge-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+
+  /* MULTIPLAYER: role screen, player join, big phone buzzer */
+  .role-card{
+    background:rgba(0,0,0,.2);border:1px solid rgba(226,185,75,.25);border-radius:14px;
+    padding:18px;flex:1;min-width:220px;text-align:center;
+  }
+  #join-qr{display:block;margin:12px auto 0;border-radius:10px;background:#fff;padding:6px;}
+  .team-pick-btn{
+    display:block;width:100%;text-align:left;border:none;border-radius:10px;
+    padding:14px 18px;margin-bottom:10px;font-size:16px;font-weight:700;color:#fff;
+    cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25);
+  }
+  .team-pick-btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25);}
+  .buzzer-big{
+    display:none;width:100%;border:none;border-radius:18px;padding:34px 16px;
+    font-size:26px;font-weight:900;color:#fff;cursor:pointer;margin-top:16px;
+    box-shadow:0 6px 0 rgba(0,0,0,.32), 0 10px 22px rgba(0,0,0,.28);
+    transition:transform .07s ease, box-shadow .07s ease;
+    user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+    animation:pulse 1s ease-in-out infinite;
+  }
+  .buzzer-big:active{transform:translateY(5px) scale(.98);box-shadow:0 1px 0 rgba(0,0,0,.32), 0 3px 10px rgba(0,0,0,.22);}
+  .buzzer-big:disabled{opacity:.5;cursor:not-allowed;animation:none;}
+  .link-small{background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;padding:0;}
+
+  /* FINAL */
+  .podium{display:flex;align-items:flex-end;justify-content:center;gap:18px;margin:30px 0;flex-wrap:wrap;}
+  .pod-col{text-align:center;}
+  .pod-block{border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#2b1d05;}
+  .pod-1 .pod-block{height:140px;width:110px;background:linear-gradient(160deg,var(--gold-light),var(--gold));}
+  .pod-2 .pod-block{height:100px;width:100px;background:linear-gradient(160deg,#dfe6e9,#b2bec3);}
+  .pod-3 .pod-block{height:70px;width:100px;background:linear-gradient(160deg,#e0a673,#b9733e);}
+  .pod-name{margin-top:8px;font-weight:700;font-size:14px;}
+  .pod-score{color:var(--gold-light);font-weight:800;}
+  .rest-list{margin-top:10px;}
+  .rest-row{display:flex;justify-content:space-between;padding:8px 14px;background:rgba(0,0,0,.2);border-radius:8px;margin-bottom:6px;font-size:14px;}
+
+  .hint{font-size:12px;color:var(--muted);text-align:center;margin-top:14px;}
+  footer.credit{text-align:center;color:rgba(169,197,180,.5);font-size:11px;margin-top:30px;}
+
+  /* CONFETTI */
+  .confetti-piece{
+    position:fixed;top:-20px;z-index:999;pointer-events:none;border-radius:2px;
+    animation:confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall{
+    to{ transform:translateY(110vh) rotate(540deg); opacity:.9; }
+  }
+</style>
+</head>
+<body>
+
+<div class="snowfield" id="snowfield"></div>
+
+<div class="wrap">
+  <header class="top">
+    <h1>🎄 Finančno-realitný Vianočný Kvíz 🏠</h1>
+    <p>Úvery · Hypotéky · Oceňovanie nehnuteľností · Investície · Dane · Poistenie</p>
+  </header>
+
+  <!-- ROLE SCREEN -->
+  <section class="screen active" id="screen-role">
+    <div class="panel" style="text-align:center;">
+      <h2 style="margin-top:0;color:var(--gold-light);">Ako sa chceš zapojiť?</h2>
+      <p style="color:var(--muted);">Jeden človek spúšťa hru na notebooku/TV ako hostiteľ. Ostatní tímy sa pripoja na vlastnom mobile a stláčajú svoje tlačidlo tam.</p>
+      <div class="btn-row" style="justify-content:center;">
+        <div class="role-card">
+          <div style="font-size:34px;">🖥️</div>
+          <p style="margin:8px 0 14px;">Spúšťam a riadim hru (notebook / TV)</p>
+          <button class="btn" id="btn-role-host">Som hostiteľ</button>
+        </div>
+        <div class="role-card">
+          <div style="font-size:34px;">📱</div>
+          <p style="margin:8px 0 14px;">Hrám v tíme a stláčam tlačidlo na mobile</p>
+          <button class="btn secondary" id="btn-role-player">Som hráč</button>
+        </div>
+      </div>
+      <div class="hint" id="firebase-status"></div>
+    </div>
+  </section>
+
+  <!-- PLAYER JOIN SCREEN -->
+  <section class="screen" id="screen-player-join">
+    <div class="panel" style="text-align:center;">
+      <h2 style="margin-top:0;color:var(--gold-light);">Vyber svoj tím</h2>
+      <p id="player-join-hint" style="color:var(--muted);">Čakáme, kým hostiteľ spustí hru...</p>
+      <div id="player-team-list"></div>
+    </div>
+  </section>
+
+  <!-- PLAYER GAME SCREEN -->
+  <section class="screen" id="screen-player-game">
+    <div class="panel">
+      <div class="round-banner mini">
+        <h2 id="p-round-title">Otázka 1 z 96</h2>
+        <span class="diff-pill" id="p-diff-pill">Ľahká</span>
+        <button class="link-small" id="btn-change-team" style="margin-left:auto;">🔁 Zmeniť tím</button>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="p-progress-fill" style="width:0%"></div></div>
+
+      <div class="q-header">
+        <div class="q-cat" id="p-q-cat-label">Kategória</div>
+        <div class="timer-box">
+          <div class="timer-track"><div class="timer-fill" id="p-timer-fill" style="width:100%"></div></div>
+          <div class="timer-num" id="p-timer-num">25</div>
+        </div>
+      </div>
+
+      <div class="q-text" id="p-q-text">Otázka...</div>
+      <div class="opts" id="p-q-opts"></div>
+
+      <div class="answer-box" id="p-answer-box"></div>
+
+      <div class="buzz-banner" id="p-buzz-banner"></div>
+
+      <button class="buzzer-big" id="p-buzz-btn">🔔 STLAČ, AK VIEŠ!</button>
+
+      <div class="hint" id="p-my-team-label"></div>
+    </div>
+  </section>
+
+  <!-- SETUP SCREEN -->
+  <section class="screen" id="screen-setup">
+    <div class="panel">
+      <h2 style="margin-top:0;color:var(--gold-light);">Nastavenie hry</h2>
+      <div class="rules-box" style="text-align:center;">
+        <b>📱 Pripojenie hráčov na mobile:</b><br>
+        Nech si každý tím otvorí <b>tento istý link</b> na telefóne a zvolí „Som hráč“.
+        <img id="join-qr" alt="QR kód na pripojenie" width="160" height="160">
+      </div>
+      <div id="team-list"></div>
+      <div class="btn-row">
+        <button class="btn secondary" id="btn-add-team">+ Pridať tím</button>
+      </div>
+
+      <div class="setup-grid">
+        <div class="field">
+          <label>Čas na odpoveď pri jednej otázke (sekundy)</label>
+          <input type="number" id="input-timer" value="25" min="10" max="90">
+        </div>
+        <div class="field">
+          <label>Body za správnu odpoveď</label>
+          <input type="number" id="input-points" value="10" min="5" max="50" step="5">
+        </div>
+      </div>
+
+      <div class="rules-box">
+        <b>Ako sa hrá:</b> Kvíz má 8 kôl, od najľahších po najťažšie otázky. V každom kole je 6 otázok (jedna z každej oblasti). Keď host spustí otázku, bežia možnosti A–D a odpočítavanie — <b>žiadny tím nevidí, ktorá odpoveď je správna</b>. Tím, ktorý chce odpovedať, sa prihlási <b>ako prvý stlačením svojho tlačidla (alebo klávesu 1–8)</b>. Ak odpovie správne, získava body a otázka končí. Ak odpovie nesprávne, môžu sa prihlásiť ostatné tímy do konca času.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="btn-start-game">🎅 Spustiť kvíz</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUESTION SCREEN -->
+  <section class="screen" id="screen-question">
+    <div class="panel">
+      <div class="round-banner mini">
+        <h2 id="round-title">Otázka 1 z 96</h2>
+        <span class="diff-pill" id="diff-pill">Ľahká</span>
+        <button class="btn danger ghost btn-tiny" id="btn-end-early" title="Ukončiť kvíz a zobraziť výsledky">🏁 Ukončiť</button>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="score-strip" id="score-strip"></div>
+
+      <div class="q-header">
+        <div class="q-cat" id="q-cat-label">Kategória</div>
+        <div class="timer-box">
+          <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+          <div class="timer-num" id="timer-num">25</div>
+        </div>
+      </div>
+
+      <div class="q-text" id="q-text">Otázka...</div>
+      <div class="opts" id="q-opts"></div>
+
+      <div class="answer-box" id="answer-box"></div>
+
+      <div class="buzz-banner" id="buzz-banner"></div>
+
+      <div id="start-row" class="btn-row">
+        <button class="btn" id="btn-start-question">▶️ Spustiť otázku</button>
+      </div>
+
+      <div class="buzzers" id="buzzers"></div>
+
+      <div class="judge-row" id="judge-row" style="display:none;">
+        <button class="btn secondary" id="btn-correct">✅ Správne (+body)</button>
+        <button class="btn danger" id="btn-wrong">❌ Nesprávne</button>
+      </div>
+
+      <div class="btn-row" id="reveal-row" style="display:none;">
+        <button class="btn ghost" id="btn-reveal">👁️ Zobraziť správnu odpoveď</button>
+      </div>
+
+      <div class="btn-row" id="next-row" style="display:none;">
+        <button class="btn" id="btn-next">➡️ Ďalšia otázka</button>
+      </div>
+
+      <div class="hint">Tímy sa môžu prihlásiť klávesmi <b>1–8</b> alebo kliknutím na svoje tlačidlo nižšie.</div>
+    </div>
+  </section>
+
+  <!-- FINAL SCREEN -->
+  <section class="screen" id="screen-final">
+    <div class="panel">
+      <h2 style="text-align:center;color:var(--gold-light);margin-top:0;">🏆 Výsledky kvízu 🏆</h2>
+      <div class="podium" id="podium"></div>
+      <div class="rest-list" id="rest-list"></div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="btn-restart">🔄 Nová hra</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="credit">Veselé Vianoce a šťastný kapustnicový večer 🎄🍲</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-firestore-compat.min.js"></script>
+<script>
+/* ---------------------------------------------------------
+   DATA: 6 categories x 8 questions, ordered easy -> hard.
+   Each question index (0..7) = difficulty round (1..8).
+--------------------------------------------------------- */
+const CATEGORIES = [
+  {
+    id:'uvery', name:'Úvery a pôžičky', icon:'💳',
+    questions:[
+      {q:"Čo je „bonita klienta“ pri posudzovaní žiadosti o úver?", opts:["Hodnota nehnuteľnosti, ktorú klient vlastní","Schopnosť klienta splácať úver podľa jeho príjmov a záväzkov","Vek klienta v čase podania žiadosti","Počet bánk, v ktorých má klient účet"], correct:1, explain:"Bonita vyjadruje, či a ako je klient schopný splácať úver na základe príjmov, výdavkov a existujúcich záväzkov."},
+      {q:"Čo je úverový register?", opts:["Zoznam nehnuteľností v katastri","Databáza evidujúca úverovú históriu a záväzky klientov","Register obchodných spoločností","Zoznam úrokových sadzieb bánk"], correct:1, explain:"Úverové registre (napr. bankové aj nebankové) zaznamenávajú, aké úvery klient má a ako ich spláca."},
+      {q:"Aký je základný rozdiel medzi spotrebiteľským a hypotekárnym úverom?", opts:["Spotrebiteľský úver je vždy vyšší","Hypotekárny úver je zabezpečený nehnuteľnosťou, spotrebiteľský obvykle nie","Spotrebiteľský úver poskytujú len poisťovne","Hypotekárny úver nemá úrok"], correct:1, explain:"Hypotekárny úver je zabezpečený záložným právom k nehnuteľnosti, spotrebiteľský úver je spravidla nezabezpečený."},
+      {q:"Čo znamená „fixácia úrokovej sadzby“?", opts:["Sadzba sa mení každý mesiac podľa inflácie","Sadzba zostáva nezmenená počas dohodnutého obdobia","Banka garantuje nulový úrok prvý rok","Úrok sa platí vopred na celé obdobie"], correct:1, explain:"Počas fixácie je úroková sadzba zmluvne pevne daná a nemení sa, nech sa trh pohne akokoľvek."},
+      {q:"Čo vyjadruje skratka RPMN?", opts:["Ročnú percentuálnu mieru nákladov","Register platobnej morálky národnej banky","Rezervný poplatok za majetkové nehnuteľnosti","Ročnú platbu mesačných nákladov"], correct:0, explain:"RPMN zahŕňa úrok aj všetky poplatky spojené s úverom a vyjadruje skutočné celkové náklady za rok."},
+      {q:"Čo je „predčasné splatenie úveru“?", opts:["Odklad splátok o niekoľko mesiacov","Splatenie úveru skôr, než určuje zmluva","Zvýšenie mesačnej splátky","Prevod úveru na inú osobu"], correct:1, explain:"Klient môže úver splatiť aj pred koncom dohodnutej lehoty, za podmienok dohodnutých v zmluve a zákone."},
+      {q:"Čo vyjadruje ukazovateľ DTI (Debt to Income)?", opts:["Poměr úveru k hodnote nehnuteľnosti","Poměr celkového dlhu žiadateľa k jeho ročnému príjmu","Poměr mesačnej splátky k príjmu","Poměr vlastných zdrojov k cene nehnuteľnosti"], correct:1, explain:"DTI porovnáva celkovú výšku všetkých dlhov klienta s jeho čistým ročným príjmom."},
+      {q:"Čo vyjadruje ukazovateľ DSTI (Debt Service to Income)?", opts:["Výšku úroku v percentách","Podiel mesačných splátok všetkých úverov na čistom mesačnom príjme","Celkový dlh klienta v eurách","Poměr úveru k hodnote zálohu"], correct:1, explain:"DSTI meria, akú časť mesačného čistého príjmu žiadateľa „zoberú“ splátky všetkých jeho úverov."},
+      {q:"Čo je kontokorentný úver?", opts:["Jednorazová pôžička splácaná v pravidelných splátkach","Povolené prečerpanie bežného účtu do dohodnutého limitu","Úver zabezpečený záložným právom k nehnuteľnosti","Úver poskytovaný len právnickým osobám"], correct:1, explain:"Kontokorentný úver umožňuje klientovi čerpať z bežného účtu aj do mínusu, až do vopred dohodnutého limitu."},
+      {q:"Čo je „credit scoring“ v bankovníctve?", opts:["Štatistický model, ktorý na základe údajov o klientovi vyhodnocuje jeho úverové riziko","Zoznam úrokových sadzieb bánk","Poplatok za vybavenie úveru","Register nehnuteľností"], correct:0, explain:"Credit scoring prideľuje klientovi bodové hodnotenie na základe príjmu, histórie splácania a ďalších údajov, podľa ktorého banka posudzuje riziko."},
+      {q:"Aký je rozdiel medzi nominálnou úrokovou sadzbou a RPMN?", opts:["Sú to vždy rovnaké čísla","Nominálna sadzba vyjadruje len úrok, RPMN zahŕňa aj ďalšie poplatky spojené s úverom","Nominálna sadzba platí len pre podnikateľov","RPMN sa počíta len pri hypotékach"], correct:1, explain:"RPMN je vždy rovnaká alebo vyššia ako nominálna úroková sadzba, pretože zohľadňuje aj poplatky, poistenie a ďalšie náklady úveru."},
+      {q:"Čo je reštrukturalizácia úveru?", opts:["Zrušenie úveru bez náhrady","Zmena podmienok splácania (napr. predĺženie splatnosti), zvyčajne pri finančných ťažkostiach klienta","Zvýšenie úrokovej sadzby bankou bez súhlasu klienta","Prevod úveru na inú banku"], correct:1, explain:"Pri reštrukturalizácii sa banka s klientom dohodne na zmenených podmienkach splácania, aby zvládol svoj záväzok splatiť."},
+      {q:"Čo je moratórium na splácanie úveru?", opts:["Trvalé odpustenie dlhu","Dočasný odklad splátok istiny (prípadne aj úrokov) dohodnutý s bankou alebo nariadený zákonom","Zvýšenie úrokovej sadzby","Jednorazové predčasné splatenie"], correct:1, explain:"Moratórium je dočasné prerušenie povinnosti splácať, napríklad pri vážnych finančných ťažkostiach alebo počas krízových situácií."},
+      {q:"Čo znamená v bankovníctve skratka NPL (non-performing loan)?", opts:["Nový typ podnikateľského úveru","Úver, pri ktorom je dlžník výrazne (zvyčajne viac než 90 dní) v omeškaní so splácaním","Úver bez úroku","Úver schválený online"], correct:1, explain:"NPL označuje tzv. zlyhané alebo rizikové úvery, ktoré banky osobitne sledujú a tvoria na ne opravné položky."},
+      {q:"Čo je sekuritizácia úverových pohľadávok?", opts:["Poistenie úveru proti krádeži","Premena súboru úverových pohľadávok banky na obchodovateľné cenné papiere predávané investorom","Zrušenie záložného práva","Zníženie úrokovej sadzby štátom"], correct:1, explain:"Sekuritizáciou banka „balí“ pohľadávky z úverov do cenných papierov, ktoré predá investorom a tým získa nové zdroje na ďalšie úverovanie."},
+      {q:"Čo je cieľom regulačného rámca „Bazilej III“ vo vzťahu k bankám?", opts:["Zjednotiť menu v eurozóne","Stanoviť bankám medzinárodné požiadavky na kapitál a likviditu, aby boli odolnejšie voči krízam","Zrušiť úroky z úverov","Určiť ceny nehnuteľností"], correct:1, explain:"Bazilej III je súbor medzinárodných bankových regulačných štandardov posilňujúcich kapitálovú primeranosť a likviditu bánk, čo nepriamo ovplyvňuje aj ochotu poskytovať úvery."},
+    ]
+  },
+  {
+    id:'hypoteky', name:'Hypotéky', icon:'🏦',
+    questions:[
+      {q:"Čo je záložné právo k nehnuteľnosti v súvislosti s hypotékou?", opts:["Zmluva o prenájme nehnuteľnosti","Právo banky uspokojiť pohľadávku z predaja zálohovanej nehnuteľnosti, ak dlžník neplatí","Poistenie nehnuteľnosti proti požiaru","Daň z nehnuteľnosti"], correct:1, explain:"Záložné právo zabezpečuje úver — pri nesplácaní má banka právo uspokojiť sa z predaja nehnuteľnosti."},
+      {q:"Čo je LTV (Loan to Value)?", opts:["Poměr výšky úveru k hodnote zakladanej nehnuteľnosti","Poměr úroku k istine","Poměr splátky k príjmu žiadateľa","Poměr veku žiadateľa k dĺžke splácania"], correct:0, explain:"Napríklad pri nehnuteľnosti za 200 000 € a úvere 160 000 € je LTV 80 %."},
+      {q:"Čo je „amortizácia“ úveru?", opts:["Jednorazové splatenie celého úveru", "Postupné splácanie istiny a úroku v splátkach počas doby splatnosti","Zníženie úrokovej sadzby v čase","Odpustenie časti dlhu bankou"], correct:1, explain:"Amortizácia je postupné umorovanie (splácanie) dlhu pravidelnými splátkami."},
+      {q:"Čo je „obdobie fixácie“ pri hypotéke?", opts:["Čas potrebný na vybavenie úveru v banke","Doba, počas ktorej je úroková sadzba nemenná","Doba, počas ktorej nemožno nehnuteľnosť predať","Doba trvania poistnej zmluvy"], correct:1, explain:"Po dobu fixácie (napr. 3, 5, 10 rokov) sa úroková sadzba nemení."},
+      {q:"Čo znamená „refinancovanie hypotéky“?", opts:["Zvýšenie limitu na kreditnej karte","Nahradenie existujúceho úveru novým, zvyčajne s lepšími podmienkami","Predaj nehnuteľnosti banke","Zrušenie úveru bez náhrady"], correct:1, explain:"Refinancovaním klient spláca starý úver novým, výhodnejším (napr. s nižším úrokom)."},
+      {q:"Čo sa typicky stane po uplynutí fixácie, ak klient nezareaguje?", opts:["Úver sa automaticky odpustí","Banka ponúkne novú sadzbu, prípadne prejde na podmienky podľa zmluvy","Nehnuteľnosť prejde do vlastníctva banky","Klient musí okamžite splatiť celý úver"], correct:1, explain:"Banka zvyčajne pred koncom fixácie ponúkne novú úrokovú sadzbu na ďalšie obdobie."},
+      {q:"Na čo slúži pri hypotéke „vinkulácia poistného plnenia“ v prospech banky?", opts:["Banka má nárok na poistné plnenie z poistenia nehnuteľnosti pri poškodení zálohu","Klient musí poistiť vozidlo banky","Banka vinkuluje časť úveru na opravy","Poistenie sa viaže na vek klienta"], correct:0, explain:"Vinkulácia znamená, že poistné plnenie pri škode na nehnuteľnosti smeruje (aj) banke, ktorá má na nej záloh."},
+      {q:"Čo bol „hypotekárny záložný list“ (HZL)?", opts:["Cenný papier, ktorým si banky historicky zabezpečovali zdroje na financovanie hypoték","Zmluva medzi klientom a znalcom","Druh poistnej zmluvy","Výpis z katastra nehnuteľností"], correct:0, explain:"HZL bol dlhový cenný papier emitovaný bankou, ktorého výnos bol krytý hypotekárnymi úvermi v jej portfóliu."},
+      {q:"Kto je spoludlžník pri hypotéke?", opts:["Osoba, ktorá sa spolu s hlavným dlžníkom zaväzuje splácať úver a ručí zaň","Zamestnanec banky schvaľujúci úver","Znalec oceňujúci nehnuteľnosť","Poisťovací maklér"], correct:0, explain:"Spoludlžník sa zaväzuje k splácaniu úveru rovnako ako hlavný dlžník, čo bankám často zvyšuje šancu na schválenie alebo vyššiu sumu úveru."},
+      {q:"Čo je tzv. „americká hypotéka“?", opts:["Hypotéka dostupná len v USA","Neúčelový úver zabezpečený záložným právom k nehnuteľnosti, ktorý možno použiť na čokoľvek","Hypotéka s nulovým úrokom","Úver len na kúpu nehnuteľnosti v zahraničí"], correct:1, explain:"Na rozdiel od klasickej hypotéky nie je „americká hypotéka“ účelovo viazaná – klient môže peniaze použiť ľubovoľne, aj keď je úver zabezpečený nehnuteľnosťou."},
+      {q:"Čo je „predschválená hypotéka“ (pre-approval)?", opts:["Hypotéka, ktorú banka vopred orientačne schváli klientovi ešte predtým, než si vyberie konkrétnu nehnuteľnosť","Hypotéka bez úroku","Hypotéka schválená exekútorom","Hypotéka, ktorú nemožno refinancovať"], correct:0, explain:"Predschválenie dáva klientovi orientačnú predstavu, akú sumu mu banka požičia, čo mu uľahčuje vyjednávanie pri kúpe."},
+      {q:"Čo je „medziúver“ (preklenovací úver)?", opts:["Úver na preklenutie obdobia do vybavenia riadnej hypotéky alebo do splnenia inej podmienky (napr. pri družstevných bytoch)","Úver poskytovaný len cudzincom","Druh poistenia nehnuteľnosti","Úver splatný len jednou splátkou po 50 rokoch"], correct:0, explain:"Medziúver sa často používa napríklad pri kúpe družstevného bytu, kým sa byt neprevedie do osobného vlastníctva a nedá sa zaň založiť riadna hypotéka."},
+      {q:"Čo je zmyslom štátneho príspevku pre mladých k hypotéke?", opts:["Zníženie dane z nehnuteľnosti","Štátna podpora znižujúca efektívne úrokové náklady mladým žiadateľom, ktorí spĺňajú zákonom stanovené podmienky (napr. vek, príjem)","Odpustenie celej istiny úveru","Zrušenie povinnosti založiť nehnuteľnosť"], correct:1, explain:"Ide o formu štátnej podpory znižujúcej náklady hypotéky pre mladých žiadateľov spĺňajúcich zákonom dané kritériá; konkrétne podmienky a výška sa v čase menia."},
+      {q:"Ako sa typicky čerpá hypotekárny úver na výstavbu (stavebný úver)?", opts:["Vždy naraz v plnej výške vopred","Postupne, podľa priebehu a stavu rozostavanosti stavby","Až po kolaudácii celej stavby","Výlučne v hotovosti"], correct:1, explain:"Pri stavebnom úvere banka peniaze zvyčajne uvoľňuje postupne, podľa toho, ako výstavba napreduje, a overuje to napríklad obhliadkami."},
+      {q:"Čo sú „kryté dlhopisy“ (covered bonds) vo vzťahu k financovaniu hypoték?", opts:["Moderný nástroj, ktorý na Slovensku nahradil pôvodné hypotekárne záložné listy ako zdroj financovania hypoték bánk","Druh poistenia nehnuteľnosti","Daň z hypotekárneho úveru","Register dlžníkov"], correct:0, explain:"Legislatívna zmena nahradila pôvodné hypotekárne záložné listy krytými dlhopismi, harmonizovanými s európskymi štandardmi."},
+      {q:"Čo je „sekundárny trh“ s hypotekárnymi pohľadávkami?", opts:["Trh, na ktorom banky medzi sebou alebo s investormi obchodujú už poskytnuté hypotekárne pohľadávky či z nich odvodené cenné papiere","Bazár s použitým bytovým vybavením","Trh s družstevnými bytmi","Register znalcov"], correct:0, explain:"Na sekundárnom trhu sa už existujúce hypotekárne pohľadávky (často vo forme cenných papierov) ďalej obchodujú medzi finančnými inštitúciami a investormi."},
+    ]
+  },
+  {
+    id:'ocenovanie', name:'Oceňovanie nehnuteľností', icon:'📐',
+    questions:[
+      {q:"Čo je kataster nehnuteľností?", opts:["Zoznam znalcov","Verejný register evidujúci nehnuteľnosti a práva k nim","Databáza hypoték","Register daňových dlžníkov"], correct:1, explain:"Kataster je verejný register, ktorý evidencuje pozemky, stavby, vlastnícke a iné práva k nim."},
+      {q:"Čo je „list vlastníctva“ (LV)?", opts:["Doklad o vzdelaní vlastníka","Verejná listina z katastra preukazujúca vlastníctvo a prípadné ťarchy","Poistná zmluva","Kúpna zmluva"], correct:1, explain:"List vlastníctva je výpis z katastra, ktorý ukazuje, kto je vlastníkom a čo na nehnuteľnosti „visí“."},
+      {q:"Čo je znalecký posudok o nehnuteľnosti?", opts:["Odborný dokument znalca stanovujúci hodnotu nehnuteľnosti","Zmluva o kúpe nehnuteľnosti","Výpis z obchodného registra","Poistná zmluva na nehnuteľnosť"], correct:0, explain:"Znalecký posudok vypracúva súdny znalec, zvyčajne pre účely hypotéky, súdu, dedičstva či predaja."},
+      {q:"Čo najviac ovplyvňuje trhovú hodnotu nehnuteľnosti okrem polohy?", opts:["Farba fasády", "Stav, veľkosť, dispozícia a technický stav nehnuteľnosti","Meno predchádzajúceho vlastníka","Počet predchádzajúcich majiteľov"], correct:1, explain:"Vedľa lokality rozhoduje najmä technický stav, veľkosť, dispozícia a vybavenosť nehnuteľnosti."},
+      {q:"Čo znamená „ťarcha“ na liste vlastníctva?", opts:["Hmotnosť stavby","Obmedzenie alebo záväzok viazaný na nehnuteľnosť, napr. záložné právo banky","Daň z nehnuteľnosti","Poplatok za zápis do katastra"], correct:1, explain:"Ťarcha je napríklad hypotéka, vecné bremeno alebo exekučné záložné právo zapísané na liste vlastníctva."},
+      {q:"Aké sú tri základné metódy oceňovania nehnuteľností?", opts:["Len trhová metóda","Porovnávacia, výnosová a nákladová metóda","Len daňová metóda","Len odhad maklérom"], correct:1, explain:"Porovnávacia metóda vychádza z podobných predaných nehnuteľností, výnosová z budúcich výnosov (napr. nájmu) a nákladová z nákladov na výstavbu."},
+      {q:"Čo vyjadruje „výnosová metóda“ oceňovania?", opts:["Cenu, za akú bola nehnuteľnosť kúpená","Hodnotu odvodenú z očakávaných budúcich výnosov, napr. z nájmu","Náklady na jej výstavbu","Daň z nehnuteľnosti"], correct:1, explain:"Výnosová metóda sa používa najmä pri investičných (prenajímaných) nehnuteľnostiach."},
+      {q:"Čo je „všeobecná hodnota nehnuteľnosti“ podľa znaleckého posudku?", opts:["Cena uvedená v inzeráte","Objektivizovaná hodnota určená znalcom na konkrétny účel (napr. pre banku)","Cena, ktorú si určí predávajúci","Daňová hodnota z katastra"], correct:1, explain:"Všeobecná hodnota je znalcom vypočítaná, objektivizovaná hodnota — nemusí sa rovnať ponukovej ani skutočnej predajnej cene."},
+      {q:"Čo je obhliadka nehnuteľnosti pri znaleckom oceňovaní?", opts:["Osobná kontrola nehnuteľnosti znalcom na mieste, pri ktorej zisťuje jej skutočný stav","Online prehliadka fotografií z inzercie","Kontrola katastra bez návštevy nehnuteľnosti","Rozhovor s predchádzajúcim majiteľom"], correct:0, explain:"Znalec si pri obhliadke priamo na mieste overuje skutočný technický stav, veľkosť a vybavenie nehnuteľnosti, aby mohol presne stanoviť jej hodnotu."},
+      {q:"Aký je hlavný rozdiel medzi orientačným odhadom ceny (napr. od realitného makléra) a znaleckým posudkom?", opts:["Žiadny, ide o to isté","Znalecký posudok je odborný, metodicky podložený dokument so záväznou platnosťou napr. pre banku, orientačný odhad slúži len ako predbežná informácia","Orientačný odhad je vždy presnejší","Znalecký posudok vypracúva realitná kancelária"], correct:1, explain:"Znalecký posudok vypracúva súdny znalec podľa presne stanovenej metodiky a má formálnu váhu, napríklad pre banku pri hypotéke."},
+      {q:"Čo je „technická hodnota“ stavby?", opts:["Hodnota vyjadrujúca, koľko by stála výstavba rovnakej stavby dnes, znížená o opotrebenie","Cena, za ktorú bola stavba pôvodne postavená","Daňová hodnota stavby","Hodnota pozemku bez stavby"], correct:0, explain:"Technická hodnota vychádza z reprodukčnej (obstarávacej) ceny stavby, od ktorej sa odpočíta opotrebenie zodpovedajúce veku a stavu stavby."},
+      {q:"Čo vyjadruje „koeficient opotrebenia“ stavby pri nákladovej metóde oceňovania?", opts:["Mieru, do akej stavba stratila svoju hodnotu v dôsledku veku, používania a technického stavu","Percento dane z nehnuteľnosti","Úrokovú sadzbu hypotéky viazanej na stavbu","Počet vlastníkov stavby"], correct:0, explain:"Opotrebenie znižuje technickú hodnotu stavby oproti jej hodnote v novostave, a to zvyčajne úmerne veku a skutočnému stavu stavby."},
+      {q:"Čo vyjadruje „kapitalizačná miera“ (cap rate) vo výnosovej metóde oceňovania?", opts:["Pomer ročného čistého výnosu z nehnuteľnosti (napr. z nájmu) k jej hodnote, používaný na prepočet výnosu na hodnotu nehnuteľnosti","Úrokovú sadzbu hypotéky","Daň z príjmu z prenájmu","Poplatok realitnej kancelárii"], correct:0, explain:"Vyššia kapitalizačná miera spravidla znamená vyššie riziko alebo nižšiu atraktivitu investície, nižšia naopak nižšie riziko a vyššiu hodnotu nehnuteľnosti pri rovnakom výnose."},
+      {q:"Čo znamená, že porovnávacia hodnota je „upravená korekčnými koeficientmi“?", opts:["Cena sa porovná len s jednou podobnou nehnuteľnosťou bez úprav","Hodnota odvodená z porovnateľných predajov sa upraví o rozdiely, napr. v polohe, stave či vybavenosti, oproti oceňovanej nehnuteľnosti","Hodnota sa znižuje o daň z nehnuteľnosti","Ide o metódu používanú len pri pozemkoch"], correct:1, explain:"Keďže žiadne dve nehnuteľnosti nie sú úplne identické, znalec upravuje ceny porovnateľných predajov koeficientmi zohľadňujúcimi rozdiely medzi nimi a oceňovanou nehnuteľnosťou."},
+      {q:"Čo je „likvidačná hodnota“ nehnuteľnosti?", opts:["Hodnota pri bežnom predaji za trhových podmienok a dostatočnom čase na predaj","Nižšia hodnota dosiahnuteľná pri nútenom alebo rýchlom predaji, napr. v exekúcii","Daňová hodnota nehnuteľnosti","Hodnota stanovená realitnou kanceláriou na inzerát"], correct:1, explain:"Likvidačná hodnota je typicky nižšia ako trhová, pretože zohľadňuje tlak na rýchly predaj (napríklad pri exekúcii), kedy nie je čas čakať na najvyššiu ponuku."},
+      {q:"Aký je rozdiel medzi „všeobecnou hodnotou“ a „cenou obvyklou“ (trhovou cenou) nehnuteľnosti?", opts:["Sú to vždy identické sumy stanovené rovnakým spôsobom","Všeobecná hodnota je objektivizovaný výsledok znaleckého výpočtu podľa metodiky, cena obvyklá je cena dosiahnuteľná na trhu v danom čase a mieste – môžu sa líšiť","Cena obvyklá sa používa len pri pozemkoch","Všeobecná hodnota sa nikdy nepoužíva pri hypotékach"], correct:1, explain:"Všeobecná hodnota vychádza z presne stanovenej znaleckej metodiky, zatiaľ čo reálna trhová (obvyklá) cena môže byť ovplyvnená aktuálnym dopytom, ponukou a vyjednávaním."},
+    ]
+  },
+  {
+    id:'investicie', name:'Investície', icon:'📈',
+    questions:[
+      {q:"Čo je dividenda?", opts:["Podiel na zisku spoločnosti vyplácaný akcionárom","Poplatok za správu fondu","Druh dlhopisu","Daň z investícií"], correct:0, explain:"Dividenda je časť zisku firmy, ktorú spoločnosť vyplatí svojim akcionárom."},
+      {q:"Aký je základný rozdiel medzi akciou a dlhopisom?", opts:["Akcia je podiel na vlastníctve firmy, dlhopis je pôžička firme/štátu","Dlhopis je podiel na vlastníctve firmy","Akcie nenesú žiadne riziko","Dlhopisy sa nedajú predať"], correct:0, explain:"Akcionár je spoluvlastník firmy, majiteľ dlhopisu je jej (alebo štátov) veriteľ."},
+      {q:"Čo je diverzifikácia investičného portfólia?", opts:["Investovanie všetkého do jedného aktíva","Rozloženie investícií medzi rôzne aktíva na zníženie rizika","Predaj všetkých akcií naraz","Investovanie len do nehnuteľností"], correct:1, explain:"Diverzifikácia znižuje riziko tým, že prípadná strata na jednom aktíve sa vyváži ostatnými."},
+      {q:"Čo je ETF?", opts:["Druh štátneho dlhopisu","Fond obchodovaný na burze, ktorý často kopíruje napr. index","Typ hypotekárneho úveru","Daňový formulár"], correct:1, explain:"ETF (Exchange Traded Fund) sa obchoduje na burze ako akcia a zvyčajne sleduje výkonnosť indexu či koša aktív."},
+      {q:"Čo znamená „likvidita“ investície?", opts:["Výška úroku","Schopnosť rýchlo premeniť aktívum na hotovosť bez veľkej straty hodnoty","Daň z predaja","Množstvo peňazí investovaných naraz"], correct:1, explain:"Vysoko likvidné aktívum (napr. akcia veľkej firmy) sa predá rýchlo a blízko trhovej ceny, nehnuteľnosť je menej likvidná."},
+      {q:"Čo je inflácia a ako ovplyvňuje úspory?", opts:["Rast cenovej hladiny, ktorý znižuje kúpnu silu peňazí","Pokles úrokových sadzieb","Zvýšenie hodnoty akcií","Daň z úspor"], correct:0, explain:"Inflácia znehodnocuje peniaze v čase — rovnaká suma si o rok kúpi menej tovaru."},
+      {q:"Čo vyjadruje „rizikový profil“ investora?", opts:["Úverový register investora","Akú mieru rizika je investor ochotný a schopný prijať","Daňové identifikačné číslo","Hodnotu jeho nehnuteľností"], correct:1, explain:"Rizikový profil pomáha vybrať vhodné investície — konzervatívny investor znáša menej výkyvov než dynamický."},
+      {q:"Čo je „zložené úročenie“?", opts:["Úročenie len z pôvodne investovanej sumy","Úročenie, pri ktorom sa úrok pripočíta k istine a v ďalšom období sa úročí aj on","Jednorazový úrok vyplatený na konci","Úrok platený len bankou"], correct:1, explain:"Pri zloženom úročení „úrok rodí úrok“, preto majetok s časom rastie zrýchľujúcim sa tempom."},
+      {q:"Čo je „časová hodnota peňazí“?", opts:["Peniaze majú vždy rovnakú hodnotu bez ohľadu na čas","Princíp, že suma peňazí dnes má väčšiu hodnotu než rovnaká suma v budúcnosti, napr. pre možnosť zhodnotenia","Hodnota mincí a bankoviek podľa veku","Poplatok banky za vedenie účtu"], correct:1, explain:"Peniaze dnes možno investovať a zarábať na nich úrok, preto majú vyššiu hodnotu než rovnaká suma prijatá až o niekoľko rokov."},
+      {q:"Čo je „volatilita“ investície?", opts:["Výška dividendy","Miera kolísania ceny alebo hodnoty investície v čase","Daň z investičného výnosu","Poplatok za nákup akcie"], correct:1, explain:"Vysoko volatilné aktívum (napr. niektoré akcie) výrazne kolíše v cene, zatiaľ čo nízko volatilné (napr. štátne dlhopisy) je stabilnejšie."},
+      {q:"Aký je rozdiel medzi pasívnym a aktívnym investovaním?", opts:["Pasívne investovanie sleduje trh/index s minimálnymi zásahmi, aktívne sa snaží trh prekonať výberom konkrétnych aktív a častejším obchodovaním","Pasívne investovanie je vždy rizikovejšie","Aktívne investovanie nemá žiadne poplatky","Ide o rovnaký prístup s iným názvom"], correct:0, explain:"Pasívny investor napríklad kopíruje index cez ETF, aktívny investor sa snaží vyberať konkrétne aktíva s cieľom dosiahnuť nadpriemerný výnos."},
+      {q:"Čo vyjadruje ukazovateľ P/E (cena/zisk) pri akciách?", opts:["Pomer trhovej ceny akcie k zisku spoločnosti pripadajúcemu na akciu","Pomer dividendy k cene akcie","Percento akcií vo vlastníctve zamestnancov","Výšku dane z predaja akcie"], correct:0, explain:"Vysoké P/E môže naznačovať, že trh od firmy očakáva rast zisku, nízke P/E môže znamenať, že akcia je lacnejšia alebo firma menej perspektívna."},
+      {q:"Čo je „korelácia“ medzi aktívami v investičnom portfóliu?", opts:["Súčet všetkých výnosov portfólia","Miera, do akej sa hodnoty dvoch aktív pohybujú spoločne (rovnakým alebo opačným smerom)","Výška poplatkov za správu portfólia","Daň z kapitálových výnosov"], correct:1, explain:"Kombinovaním aktív s nízkou alebo zápornou koreláciou možno znížiť celkové riziko portfólia, aj keď jednotlivé aktíva samy osebe rizikové sú."},
+      {q:"Čo je „rebalancovanie“ investičného portfólia?", opts:["Jednorazový predaj celého portfólia","Pravidelné upravovanie zloženia portfólia späť na pôvodné cieľové percentuálne rozloženie aktív","Zmena meny, v ktorej je portfólio vedené","Zrušenie diverzifikácie"], correct:1, explain:"Keďže sa ceny aktív časom vyvíjajú rôzne, rebalancovaním investor vracia váhy jednotlivých aktív (napr. akcie/dlhopisy) k pôvodnému plánovanému pomeru."},
+      {q:"Čo je „hedžing“ (zaistenie) v investovaní?", opts:["Stratégia alebo nástroj na zníženie rizika nepriaznivého pohybu ceny iného aktíva","Spôsob maximalizácie rizika pre vyšší výnos","Druh dane z investícií","Poplatok za otvorenie investičného účtu"], correct:0, explain:"Hedžing (napr. pomocou derivátov) slúži na ochranu pred nepriaznivým vývojom ceny, kurzu alebo úrokovej sadzby, často za cenu zníženia potenciálneho zisku."},
+      {q:"Aký je rozdiel medzi systematickým a nesystematickým rizikom investície?", opts:["Systematické riziko ovplyvňuje celý trh a nedá sa odstrániť diverzifikáciou, nesystematické je špecifické pre konkrétnu firmu/odvetvie a diverzifikáciou sa dá znížiť","Sú to synonymá pre rovnaké riziko","Nesystematické riziko sa týka len štátnych dlhopisov","Systematické riziko sa dá úplne odstrániť diverzifikáciou"], correct:0, explain:"Systematické (trhové) riziko postihuje celý trh naraz (napr. recesia), zatiaľ čo nesystematické riziko sa viaže na konkrétnu firmu a diverzifikáciou portfólia sa dá výrazne znížiť."},
+    ]
+  },
+  {
+    id:'dane', name:'Dane a legislatíva', icon:'⚖️',
+    questions:[
+      {q:"Kto na Slovensku bežne platí daň z nehnuteľnosti?", opts:["Kupujúci pri podpise zmluvy","Vlastník nehnuteľnosti k 1. januáru zdaňovacieho obdobia","Realitná kancelária","Banka poskytujúca hypotéku"], correct:1, explain:"Daň z nehnuteľnosti je miestna daň, platí ju vlastník evidovaný k 1.1. príslušného roka, správcom je obec/mesto."},
+      {q:"Čo je kúpna zmluva pri prevode nehnuteľnosti?", opts:["Zmluva, ktorou predávajúci prevádza vlastnícke právo na kupujúceho za dohodnutú cenu","Zmluva o prenájme","Poistná zmluva","Úverová zmluva"], correct:0, explain:"Kúpna zmluva je základný právny titul na prevod vlastníctva nehnuteľnosti za kúpnu cenu."},
+      {q:"Po koľkých rokoch vlastníctva je na Slovensku príjem z predaja nehnuteľnosti (nezaradenej do obchodného majetku) oslobodený od dane z príjmu?", opts:["2 roky","3 roky","5 rokov","10 rokov"], correct:2, explain:"Podľa §9 zákona o dani z príjmov je takýto príjem oslobodený po uplynutí 5 rokov od nadobudnutia nehnuteľnosti."},
+      {q:"Čo je darovacia zmluva?", opts:["Zmluva, ktorou darca bezplatne prevádza vlastníctvo na obdarovaného","Zmluva o prenájme bytu","Zmluva o úvere","Poistná zmluva"], correct:0, explain:"Pri darovaní prechádza vlastníctvo bezplatne, na rozdiel od kúpnej zmluvy."},
+      {q:"Kto v Slovenskej republike zapisuje vlastnícke práva k nehnuteľnostiam?", opts:["Obec","Okresný úrad – katastrálny odbor","Notár","Banka"], correct:1, explain:"Vklad vlastníckeho práva do katastra vykonáva katastrálny odbor príslušného okresného úradu."},
+      {q:"Kedy nastáva právny účinok prevodu vlastníctva nehnuteľnosti na Slovensku?", opts:["Dňom podpisu kúpnej zmluvy","Dňom zaplatenia kúpnej ceny","Vkladom (rozhodnutím o povolení vkladu) do katastra nehnuteľností","Dňom odovzdania kľúčov"], correct:2, explain:"Vlastnícke právo k nehnuteľnosti sa nadobúda až právoplatným rozhodnutím o povolení vkladu do katastra."},
+      {q:"Čo je „vecné bremeno“ na nehnuteľnosti, napr. právo doživotného užívania?", opts:["Daň viazaná na nehnuteľnosť","Obmedzenie vlastníka v prospech inej osoby, napr. právo užívania alebo prechodu","Poistenie nehnuteľnosti","Hypotekárny úver"], correct:1, explain:"Vecné bremeno zaväzuje vlastníka niečo trpieť, konať alebo sa niečoho zdržať v prospech oprávnenej osoby."},
+      {q:"Čo je potrebné, aby bola kúpna zmluva o nehnuteľnosti platná a zapísateľná do katastra?", opts:["Len ústna dohoda strán","Písomná forma, pričom podpis prevodcu (predávajúceho) musí byť úradne osvedčený","Súhlas susedov","Notárska zápisnica je vždy povinná"], correct:1, explain:"Zmluva musí mať písomnú formu a podpis prevodcu sa musí úradne overiť (osvedčiť), aby ju kataster zapísal."},
+      {q:"Čo je „rezervačná zmluva“ pri kúpe nehnuteľnosti?", opts:["Zmluva, ktorou si záujemca za poplatok rezervuje nehnuteľnosť na dohodnutý čas pred podpisom kúpnej zmluvy","Konečná kúpna zmluva","Zmluva o hypotéke","Poistná zmluva na nehnuteľnosť"], correct:0, explain:"Rezervačná zmluva dočasne „blokuje“ nehnuteľnosť pre záujemcu, zvyčajne kým si vybaví financovanie, pred podpisom samotnej kúpnej zmluvy."},
+      {q:"Na čo slúži notárska alebo advokátska úschova kúpnej ceny pri predaji nehnuteľnosti?", opts:["Na zníženie dane z predaja","Na bezpečné uloženie kúpnej ceny treťou nezávislou stranou, kým sa splnia dohodnuté podmienky (napr. zápis vlastníctva v katastri)","Na zrýchlenie konania na katastri","Na poistenie nehnuteľnosti"], correct:1, explain:"Úschova chráni obe strany – predávajúci má istotu, že peniaze existujú, kupujúci zase istotu, že peniaze sa vyplatia až po splnení dohodnutých podmienok."},
+      {q:"Čo je „predkupné právo“ podielových spoluvlastníkov nehnuteľnosti?", opts:["Právo štátu kúpiť akúkoľvek nehnuteľnosť ako prvý","Právo ostatných spoluvlastníkov odkúpiť prevádzaný spoluvlastnícky podiel prednostne pred treťou osobou, za rovnakých podmienok","Právo nájomcu kúpiť prenajatý byt","Právo banky kúpiť zálohovanú nehnuteľnosť"], correct:1, explain:"Pri prevode podielu na nehnuteľnosti (okrem prevodu blízkej osobe) musia mať ostatní podieloví spoluvlastníci možnosť podiel prednostne odkúpiť za rovnakých podmienok."},
+      {q:"Aký je rozdiel medzi „vkladom“ a „záznamom“ do katastra nehnuteľností?", opts:["Ide o úplne rovnaký úkon pod iným názvom","Vkladom vzniká, mení sa alebo zaniká vlastnícke právo (napr. pri kúpe), záznamom sa len eviduje už existujúca zmena (napr. podľa rozhodnutia súdu)","Záznam sa týka len pozemkov","Vklad vykonáva výlučne notár"], correct:1, explain:"Vkladové konanie je spravidla potrebné pri zmluvných prevodoch (kúpa, darovanie), záznam sa použije napríklad pri nadobudnutí vlastníctva na základe rozhodnutia súdu alebo dedičstva."},
+      {q:"Čo je osvedčenie pravosti podpisu (tzv. legalizácia) a prečo je potrebné pri kúpnej zmluve o nehnuteľnosti?", opts:["Overenie, že podpis na listine skutočne patrí danej osobe, vykonáva ho napr. notár alebo matrika, a kataster ho pri prevode vyžaduje","Zápis nehnuteľnosti do katastra","Poistenie podpisu proti sfalšovaniu","Vyjadrenie znalca k hodnote nehnuteľnosti"], correct:0, explain:"Bez úradne osvedčeného podpisu prevodcu by kataster kúpnu zmluvu na zápis vlastníctva neakceptoval."},
+      {q:"Platí sa na Slovensku v súčasnosti samostatná „daň z prevodu nehnuteľností“?", opts:["Áno, platí ju vždy kupujúci","Nie, táto daň bola na Slovensku zrušená (k 1. 1. 2004)","Áno, ale len pri bytoch nad 100 m²","Áno, platí ju vždy banka"], correct:1, explain:"Samostatná daň z prevodu a prechodu nehnuteľností bola na Slovensku zrušená daňovou reformou od 1. januára 2004."},
+      {q:"Čo je „vydržanie“ ako spôsob nadobudnutia vlastníctva k nehnuteľnosti?", opts:["Nadobudnutie vlastníctva kúpou za nižšiu než trhovú cenu","Nadobudnutie vlastníctva nepretržitou oprávnenou držbou nehnuteľnosti v dobrej viere po zákonom stanovenú dobu (na Slovensku 10 rokov)","Nadobudnutie vlastníctva exekúciou","Nadobudnutie vlastníctva dedením zo zákona"], correct:1, explain:"Ak niekto nehnuteľnosť nepretržite a v dobrej viere drží ako svoju po dobu 10 rokov, môže sa stať jej vlastníkom vydržaním, aj bez pôvodnej kúpnej zmluvy."},
+      {q:"Čo je exekučné záložné právo na nehnuteľnosti?", opts:["Záložné právo dobrovoľne zriadené v prospech banky pri hypotéke","Záložné právo zriadené exekútorom na majetok dlžníka na zabezpečenie vymáhanej pohľadávky","Právo nájomcu užívať byt","Daň z nehnuteľnosti neuhradená obci"], correct:1, explain:"Exekútor môže zriadiť záložné právo na nehnuteľnosť dlžníka, aby zabezpečil vymoženie dlhu, čo sa následne prejaví ako ťarcha na liste vlastníctva."},
+    ]
+  },
+  {
+    id:'poistenie', name:'Poistenie a riziká', icon:'🛡️',
+    questions:[
+      {q:"Čo je poistné?", opts:["Platba, ktorú poistník platí poisťovni za poistnú ochranu","Suma, ktorú poisťovňa vyplatí pri škode","Daň z poistenia","Poplatok za znalecký posudok"], correct:0, explain:"Poistné je cena za poistenie, ktorú platí poistník poisťovni."},
+      {q:"Čo je poistné plnenie?", opts:["Platba poistníka poisťovni","Suma, ktorú poisťovňa vyplatí poistenému pri vzniku poistnej udalosti","Výška provízie makléra","Hodnota nehnuteľnosti podľa znalca"], correct:1, explain:"Poistné plnenie je to, čo poisťovňa vyplatí po vzniku škody kryté poistkou."},
+      {q:"Na čo slúži poistenie nehnuteľnosti (napr. živelné poistenie)?", opts:["Na krytie škôd napr. z požiaru, víchrice, vody a pod.","Na zníženie dane z nehnuteľnosti","Na zvýšenie hodnoty nehnuteľnosti pri predaji","Na automatické zníženie úroku hypotéky"], correct:0, explain:"Živelné poistenie chráni nehnuteľnosť pred škodami z prírodných a iných živelných udalostí."},
+      {q:"Čo je „spoluúčasť“ v poistnej zmluve?", opts:["Časť škody, ktorú si hradí poistený sám","Podiel poisťovne na zisku","Výška poistného","Doba trvania poistky"], correct:0, explain:"Spoluúčasť je dohodnutá suma alebo percento škody, ktoré znáša poistený a poisťovňa ju nehradí."},
+      {q:"Čo je „poistenie schopnosti splácať úver“, často viazané na hypotéku?", opts:["Poistenie nehnuteľnosti proti povodni","Poistenie, ktoré kryje splátky úveru napr. pri strate práce, PN alebo úmrtí","Poistenie vozidla","Poistenie právnej ochrany"], correct:1, explain:"Toto poistenie chráni klienta (a banku) pred výpadkom splátok pri nečakaných životných situáciách."},
+      {q:"Čo je „poistná udalosť“?", opts:["Akákoľvek platba poistníka","Udalosť, s ktorou je spojený vznik povinnosti poisťovne vyplatiť poistné plnenie","Výpočet poistného","Zmena poistnej zmluvy"], correct:1, explain:"Poistná udalosť je skutočnosť (napr. škoda), ktorá podľa zmluvy zakladá nárok na poistné plnenie."},
+      {q:"Čo znamená „riziko likvidity“ pri investovaní do nehnuteľností?", opts:["Riziko požiaru","Nehnuteľnosť sa nedá rýchlo predať bez zníženia ceny","Riziko krádeže","Riziko záplavy"], correct:1, explain:"Nehnuteľnosti sa predávajú pomalšie než napr. akcie, čo je pri náhlej potrebe hotovosti riziko."},
+      {q:"Čo znamená diverzifikácia rizika pri poistení veľkého portfólia nehnuteľností?", opts:["Poistenie jednej budovy vždy u viacerých poisťovní","Rozloženie poistných rizík medzi viac poisťovní/produktov, aby jedna škoda nezasiahla celé portfólio","Zvýšenie poistnej sumy","Zníženie poistného"], correct:1, explain:"Pri veľkých portfóliách sa riziko často rozkladá medzi viacerých poisťovateľov alebo poistné produkty."},
+      {q:"Čo je „poistná suma“ pri poistení nehnuteľnosti?", opts:["Výška poistného, ktoré platí poistník","Maximálna suma, do ktorej poisťovňa pri škode vyplatí poistné plnenie, mala by zodpovedať skutočnej hodnote majetku","Výška provízie sprostredkovateľa","Trhová cena nehnuteľnosti podľa realitnej kancelárie"], correct:1, explain:"Poistná suma by sa mala blížiť skutočnej hodnote nehnuteľnosti, inak hrozí pod- alebo prepoistenie."},
+      {q:"Čo je „podpoistenie“ nehnuteľnosti?", opts:["Stav, keď je dohodnutá poistná suma nižšia ako skutočná hodnota poisťovaného majetku, čo môže pri škode znamenať krátenie plnenia","Súbežné poistenie u dvoch poisťovní","Poistenie len časti nehnuteľnosti, napr. iba strechy","Zrušenie poistenia pred koncom platnosti"], correct:0, explain:"Pri podpoistení poisťovňa pri väčšej škode spravidla vyplatí len pomernú časť škody zodpovedajúcu pomeru poistnej sumy k skutočnej hodnote."},
+      {q:"Čo je poistenie zodpovednosti za škodu, napr. vlastníka bytu voči susedom?", opts:["Poistenie krytia škody, ktorú poistený neúmyselne spôsobí tretej osobe, napr. pri vytopení suseda","Poistenie vlastnej nehnuteľnosti proti požiaru","Poistenie schopnosti splácať hypotéku","Povinné zmluvné poistenie vozidla"], correct:0, explain:"Toto poistenie chráni poisteného pred nárokmi tretích osôb, ktorým neúmyselne spôsobil škodu, napríklad pri havárii vodovodu a vytopení suseda."},
+      {q:"Čo je „čakacia doba“ v poistnej zmluve?", opts:["Doba, počas ktorej poisťovňa ešte nevypláca poistné plnenie ani pri vzniku poistnej udalosti, hoci poistné sa už platí","Doba na zaplatenie prvého poistného","Doba na zrušenie zmluvy bez sankcie","Doba platnosti znaleckého posudku"], correct:0, explain:"Pri niektorých typoch poistenia (napr. životnom) poisťovňa stanovuje čakaciu dobu od uzatvorenia zmluvy, počas ktorej ešte nekryje určité riziká."},
+      {q:"Čo je „výluka z poistenia“?", opts:["Zoznam udalostí alebo škôd, na ktoré sa poistenie podľa zmluvy nevzťahuje","Zoznam poistených osôb","Zníženie poistného za bezškodový priebeh","Povinnosť nahlásiť škodu do 24 hodín"], correct:0, explain:"Výluky presne vymedzujú, čo poistka nekryje – napríklad škody spôsobené úmyselne alebo pri určitých špecifických udalostiach."},
+      {q:"Čo je „zaistenie“ (reinsurance) v poisťovníctve?", opts:["Poistenie poisťovne u inej (zaisťovne) proti riziku vlastných veľkých výplat","Poistenie majetku poisťovne","Druh životného poistenia","Poistenie vozového parku poisťovne"], correct:0, explain:"Zaistením si poisťovňa „poistí svoje riziko“ u zaisťovne, aby zvládla vyplatiť aj veľmi veľké alebo hromadné škody (napr. pri katastrofách)."},
+      {q:"Čím sa v poisťovníctve zaoberá aktuár?", opts:["Predajom poistných zmlúv klientom","Matematickým a štatistickým výpočtom rizika, poistného a rezerv poisťovne","Likvidáciou poistných udalostí v teréne","Marketingom poisťovne"], correct:1, explain:"Aktuár používa matematiku, štatistiku a pravdepodobnosť na výpočet primeraného poistného, rezerv a rizika poisťovne."},
+      {q:"Prečo poisťovne niekedy kryjú tzv. katastrofické riziká (napr. povodne) osobitne, mimo bežného balíka poistenia?", opts:["Pretože tieto riziká sú zanedbateľné a nikdy sa nerealizujú","Pretože ide o riziká s potenciálne veľmi vysokými a súčasnými škodami na mnohých poistených naraz, čo si vyžaduje osobitné ocenenie a zaistenie","Pretože ich zo zákona nemožno poistiť vôbec","Pretože sa týkajú len priemyselných budov"], correct:1, explain:"Katastrofické riziká môžu postihnúť veľké množstvo poistených naraz (napr. celé zaplavené územie), preto si vyžadujú špecifický prístup k oceneniu a zaisteniu."},
+    ]
+  },
+];
+
+const BAND_NAMES = ["Veľmi ľahká","Ľahká","Mierne pokročilá","Stredná","Pokročilá","Náročná","Veľmi náročná","Expertná"];
+const BAND_CLASS = ["diff-1","diff-1","diff-2","diff-2","diff-3","diff-3","diff-4","diff-4"];
+
+const TEAM_COLORS = ['#e74c3c','#3498db','#2ecc71','#f1c40f','#9b59b6','#1abc9c','#e67e22','#ecf0f1'];
+
+/* ---------------------------------------------------------
+   STATE
+--------------------------------------------------------- */
+let teams = [];
+let timerDuration = 25;
+let pointsPerCorrect = 10;
+let queue = [];       // flat ordered list of {cat, question, level} — difficulty rises every 3 questions
+let currentIndex = 0;
+let activeCat = null;
+let activeQuestion = null;
+let excludedTeamsThisQ = new Set();
+let timerInterval = null;
+let remaining = 0;
+let buzzedTeamIdx = null;
+let questionState = 'idle'; // idle | running | buzzed | revealed
+
+/* ---------------------------------------------------------
+   MULTIPLAYER SYNC (Firebase/Firestore) — optional layer.
+   If Firebase fails to load or init, the quiz keeps working
+   exactly as a single-screen local game; the host just never
+   gets any phone buzz-ins, and the "Som hráč" role shows a
+   friendly error instead of the join screen.
+--------------------------------------------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyCmpMT7gQDp-r5QM1UuJ-U2RGBq_uLN-PI",
+  authDomain: "online-english-quiz.firebaseapp.com",
+  projectId: "online-english-quiz",
+  storageBucket: "online-english-quiz.firebasestorage.app",
+  messagingSenderId: "1049912750429",
+  appId: "1:1049912750429:web:9bb19a6e5c4525fc0738b4",
+};
+let fdb = null;
+try{
+  if(window.firebase){
+    firebase.initializeApp(firebaseConfig);
+    fdb = firebase.firestore();
+  }
+}catch(e){ console.warn('Firebase init failed:', e); fdb = null; }
+
+function gameDocRef(){ return fdb ? fdb.collection('kapustnica_kviz').doc('game') : null; }
+
+let myRole = null;          // 'host' | 'player'
+let myTeamIdx = null;       // player's chosen team index
+let gameUnsub = null;       // active onSnapshot unsubscribe fn
+let lastPlayerData = null;  // most recent snapshot, for the local timer tick
+let playerLocalQueue = null;
+
+function syncGame(fields){
+  const ref = gameDocRef();
+  if(!ref) return;
+  const payload = Object.assign({}, fields, {updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+  ref.set(payload, {merge:true}).catch(e=>console.warn('sync failed', e));
+}
+
+async function claimBuzz(teamIdx){
+  const ref = gameDocRef();
+  if(!ref) return false;
+  try{
+    await fdb.runTransaction(async (tx)=>{
+      const snap = await tx.get(ref);
+      const data = snap.data()||{};
+      if(data.questionState!=='running') throw new Error('not-running');
+      if((data.excludedTeamsThisQ||[]).includes(teamIdx)) throw new Error('excluded');
+      if(data.buzzedTeamIdx!=null) throw new Error('already-buzzed');
+      const startedAt = data.timerStartedAt;
+      const elapsed = startedAt ? (Date.now()-startedAt)/1000 : 0;
+      const remNow = Math.max(0, (data.timerRemainingAtStart||0) - elapsed);
+      tx.update(ref, {
+        questionState:'buzzed',
+        buzzedTeamIdx: teamIdx,
+        timerStartedAt: null,
+        timerRemainingAtStart: remNow,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+    return true;
+  }catch(e){ return false; }
+}
+
+function getPlayerQueue(){
+  if(!playerLocalQueue || !playerLocalQueue.length) playerLocalQueue = buildQueue();
+  return playerLocalQueue;
+}
+
+/* ---------------------------------------------------------
+   SNOW
+--------------------------------------------------------- */
+function initSnow(){
+  const field = document.getElementById('snowfield');
+  const flakes = ['❅','❆','✦','·'];
+  for(let i=0;i<28;i++){
+    const s = document.createElement('div');
+    s.className='snow';
+    s.textContent = flakes[Math.floor(Math.random()*flakes.length)];
+    s.style.left = Math.random()*100+'%';
+    s.style.fontSize = (10+Math.random()*14)+'px';
+    s.style.animationDuration = (8+Math.random()*12)+'s';
+    s.style.animationDelay = (Math.random()*10)+'s';
+    field.appendChild(s);
+  }
+}
+
+/* ---------------------------------------------------------
+   AUDIO (simple tones, no external files)
+--------------------------------------------------------- */
+let actx;
+function tone(freq, dur, type='sine', vol=.15){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.type=type; o.frequency.value=freq;
+    g.gain.value=vol;
+    o.connect(g); g.connect(actx.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+dur);
+    o.stop(actx.currentTime+dur);
+  }catch(e){}
+}
+function sndBuzz(){ tone(880,.18,'square',.12); }
+function sndCorrect(){ tone(660,.12); setTimeout(()=>tone(880,.18),120); }
+function sndWrong(){ tone(180,.3,'sawtooth',.12); }
+function sndTick(){ tone(1000,.04,'sine',.04); }
+
+/* ---------------------------------------------------------
+   SETUP SCREEN
+--------------------------------------------------------- */
+function renderTeamList(){
+  const list = document.getElementById('team-list');
+  list.innerHTML='';
+  teams.forEach((t,i)=>{
+    const row = document.createElement('div');
+    row.className='team-row';
+    row.innerHTML = `
+      <div class="team-swatch" style="background:${t.color}"></div>
+      <input type="text" value="${t.name}" data-idx="${i}" class="team-name-input">
+      <button class="remove-team" data-idx="${i}" title="Odobrať tím">✕</button>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('.team-name-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      teams[+e.target.dataset.idx].name = e.target.value || ('Tím '+(+e.target.dataset.idx+1));
+    });
+  });
+  list.querySelectorAll('.remove-team').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      if(teams.length<=2){ return; }
+      teams.splice(+e.target.dataset.idx,1);
+      renderTeamList();
+    });
+  });
+}
+
+function addTeam(){
+  if(teams.length>=8) return;
+  const i = teams.length;
+  teams.push({name:'Tím '+(i+1), color:TEAM_COLORS[i%TEAM_COLORS.length], score:0});
+  renderTeamList();
+}
+
+document.getElementById('btn-add-team').addEventListener('click', addTeam);
+
+document.getElementById('btn-start-game').addEventListener('click', ()=>{
+  timerDuration = Math.max(10, Math.min(90, parseInt(document.getElementById('input-timer').value)||25));
+  pointsPerCorrect = Math.max(5, parseInt(document.getElementById('input-points').value)||10);
+  teams.forEach(t=>t.score=0);
+  queue = buildQueue();
+  currentIndex = 0;
+  syncGame({
+    phase:'question',
+    teams: teams.map(t=>({name:t.name, color:t.color, score:t.score})),
+    timerDuration, pointsPerCorrect,
+  });
+  openQuestion(queue[0]);
+});
+
+/* Build a flat sequence of chunks of 3 questions where the average
+   difficulty of each chunk STRICTLY increases from the first chunk to
+   the last — first 3 questions are the easiest, next 3 a bit harder,
+   and so on, up to the hardest 3 at the very end.
+
+   Mechanism: the 6 categories x N levels (0=easiest..N-1=hardest, N is
+   however many questions each category has, kept equal across all 6)
+   are processed in N/2 "bands" of 2 levels each (Llo, Lhi). Within a
+   band, the 12 questions (6 at Llo + 6 at Lhi) are split into 4 chunks
+   of 3 that gradually shift from all-Llo to all-Lhi:
+     chunk1: 3 cats @ Llo              (avg = Llo)
+     chunk2: 2 cats @ Llo + 1 cat @ Lhi (avg = Llo + .33)
+     chunk3: 1 cat @ Llo + 2 cats @ Lhi (avg = Llo + .67)
+     chunk4: 3 cats @ Lhi              (avg = Lhi)
+   Each category appears exactly once at Llo and once at Lhi per band,
+   always in its own increasing level order, and never twice in the
+   same chunk. Across all bands this yields chunks whose average
+   difficulty never repeats and never decreases. bandIdx (0..7) maps
+   into BAND_NAMES/BAND_CLASS for display. */
+function buildQueue(){
+  const q = [];
+  const levelsPerCat = CATEGORIES[0].questions.length; // same for every category
+  const bandCount = Math.floor(levelsPerCat/2);
+  for(let k=0;k<bandCount;k++){
+    const Llo = 2*k, Lhi = 2*k+1;
+    const bandIdx = Math.min(BAND_NAMES.length-1, Math.floor(k*BAND_NAMES.length/bandCount));
+    const localChunks = [
+      [[0,Llo],[1,Llo],[2,Llo]],
+      [[3,Llo],[4,Llo],[0,Lhi]],
+      [[5,Llo],[1,Lhi],[2,Lhi]],
+      [[3,Lhi],[4,Lhi],[5,Lhi]],
+    ];
+    localChunks.forEach((chunk, subIdx)=>{
+      chunk.forEach(([catIdx, lvl])=>{
+        const cat = CATEGORIES[catIdx];
+        q.push({
+          cat,
+          question: cat.questions[lvl],
+          level: lvl,
+          bandIdx,
+          subStep: subIdx+1, // 1..4, position within this band
+        });
+      });
+    });
+  }
+  return q;
+}
+
+/* ---------------------------------------------------------
+   NAVIGATION
+--------------------------------------------------------- */
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+}
+
+/* ---------------------------------------------------------
+   HEADER (progress / difficulty / live scoreboard — merged
+   directly into the question screen so the host never has to
+   pass through a separate "board" screen between questions)
+--------------------------------------------------------- */
+function renderHeader(entry){
+  const total = queue.length;
+  document.getElementById('round-title').textContent = `Otázka ${currentIndex+1} z ${total}`;
+  const pill = document.getElementById('diff-pill');
+  pill.textContent = `${BAND_NAMES[entry.bandIdx]} · krok ${entry.subStep}/4`;
+  pill.className = 'diff-pill ' + BAND_CLASS[entry.bandIdx];
+  document.getElementById('progress-fill').style.width = Math.round((currentIndex/total)*100)+'%';
+  renderScoreStrip();
+}
+
+function renderScoreStrip(){
+  const strip = document.getElementById('score-strip');
+  strip.innerHTML='';
+  const sorted = [...teams].sort((a,b)=>b.score-a.score);
+  sorted.forEach(t=>{
+    const chip = document.createElement('div');
+    chip.className='score-chip';
+    chip.innerHTML = `<div class="dot" style="background:${t.color}"></div><div class="nm">${escapeHtml(t.name)}</div><div class="pt">${t.score}</div>`;
+    strip.appendChild(chip);
+  });
+}
+
+function escapeHtml(s){
+  const d=document.createElement('div');
+  d.textContent=s;
+  return d.innerHTML;
+}
+
+document.getElementById('btn-end-early').addEventListener('click', ()=>{
+  showFinal();
+});
+
+/* ---------------------------------------------------------
+   QUESTION SCREEN
+--------------------------------------------------------- */
+function openQuestion(entry){
+  const cat = entry.cat;
+  activeCat = cat;
+  activeQuestion = entry.question;
+  excludedTeamsThisQ = new Set();
+  buzzedTeamIdx = null;
+  questionState = 'idle';
+
+  renderHeader(entry);
+
+  document.getElementById('q-cat-label').textContent = `${cat.icon} ${cat.name}`;
+  document.getElementById('q-text').textContent = activeQuestion.q;
+
+  const optsBox = document.getElementById('q-opts');
+  optsBox.innerHTML='';
+  const letters=['A','B','C','D'];
+  activeQuestion.opts.forEach((opt,i)=>{
+    const div = document.createElement('div');
+    div.className='opt';
+    div.id='opt-'+i;
+    div.innerHTML = `<span class="letter">${letters[i]})</span><span>${escapeHtml(opt)}</span>`;
+    optsBox.appendChild(div);
+  });
+
+  document.getElementById('answer-box').classList.remove('show');
+  document.getElementById('answer-box').innerHTML='';
+  document.getElementById('buzz-banner').classList.remove('show');
+  document.getElementById('start-row').style.display='flex';
+  document.getElementById('judge-row').style.display='none';
+  document.getElementById('reveal-row').style.display='none';
+  document.getElementById('next-row').style.display='none';
+
+  remaining = timerDuration;
+  updateTimerDisplay();
+
+  renderBuzzers();
+  showScreen('question');
+
+  syncGame({
+    phase:'question', currentIndex, questionState:'idle',
+    buzzedTeamIdx:null, excludedTeamsThisQ:[],
+    timerStartedAt:null, timerRemainingAtStart:timerDuration, timerDuration,
+  });
+}
+
+function renderBuzzers(){
+  const box = document.getElementById('buzzers');
+  box.innerHTML='';
+  teams.forEach((t,i)=>{
+    const b = document.createElement('div');
+    const excluded = excludedTeamsThisQ.has(i);
+    const isWinner = buzzedTeamIdx===i;
+    b.className = 'buzzer' + (excluded?' excluded':'') + (isWinner?' winner':'');
+    b.style.background = `linear-gradient(160deg, ${t.color}, ${shade(t.color,-18)})`;
+    b.innerHTML = `<span class="buzzer-name">${escapeHtml(t.name)}</span><span class="key">Kláves ${i+1}</span>`;
+    b.dataset.idx = i;
+    b.addEventListener('click', ()=> tryBuzz(i));
+    box.appendChild(b);
+  });
+}
+
+function shade(hex, pct){
+  // simple darken/lighten
+  let c = hex.replace('#','');
+  if(c.length===3) c = c.split('').map(ch=>ch+ch).join('');
+  const num = parseInt(c,16);
+  let r=(num>>16)+pct, g=((num>>8)&0x00FF)+pct, b=(num&0x0000FF)+pct;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+function updateTimerDisplay(){
+  document.getElementById('timer-num').textContent = remaining;
+  const pct = Math.max(0,Math.min(100, (remaining/timerDuration)*100));
+  document.getElementById('timer-fill').style.width = pct+'%';
+}
+
+document.getElementById('btn-start-question').addEventListener('click', ()=>{
+  questionState='running';
+  document.getElementById('start-row').style.display='none';
+  startTimer();
+  syncGame({questionState:'running', buzzedTeamIdx:null, timerStartedAt:Date.now(), timerRemainingAtStart:timerDuration});
+});
+
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    remaining--;
+    updateTimerDisplay();
+    if(remaining<=5 && remaining>0) sndTick();
+    if(remaining<=0){
+      clearInterval(timerInterval);
+      onTimeUp();
+    }
+  },1000);
+}
+
+function pauseTimer(){
+  clearInterval(timerInterval);
+}
+
+function onTimeUp(){
+  questionState='revealed';
+  document.getElementById('buzz-banner').classList.remove('show');
+  revealAnswer(false);
+  document.getElementById('next-row').style.display='flex';
+  document.getElementById('judge-row').style.display='none';
+  document.getElementById('reveal-row').style.display='none';
+  syncGame({questionState:'revealed'});
+}
+
+function tryBuzz(i){
+  if(questionState!=='running') return;
+  if(excludedTeamsThisQ.has(i)) return;
+  buzzedTeamIdx = i;
+  questionState='buzzed';
+  pauseTimer();
+  sndBuzz();
+  const banner = document.getElementById('buzz-banner');
+  banner.textContent = `🔔 ${teams[i].name} sa prihlásil ako prvý! Nech povie odpoveď nahlas.`;
+  banner.style.background = `linear-gradient(160deg, ${teams[i].color}44, transparent)`;
+  banner.style.color = '#fff';
+  banner.style.border = `2px solid ${teams[i].color}`;
+  banner.classList.add('show');
+  document.getElementById('judge-row').style.display='flex';
+  document.getElementById('reveal-row').style.display='none';
+  renderBuzzers();
+  syncGame({questionState:'buzzed', buzzedTeamIdx:i, timerStartedAt:null, timerRemainingAtStart:remaining});
+}
+
+document.getElementById('btn-correct').addEventListener('click', ()=>{
+  if(buzzedTeamIdx===null) return;
+  teams[buzzedTeamIdx].score += pointsPerCorrect;
+  sndCorrect();
+  fireConfetti(teams[buzzedTeamIdx].color);
+  questionState='revealed';
+  document.getElementById('buzz-banner').textContent = `🎉 ${teams[buzzedTeamIdx].name} odpovedal správne! +${pointsPerCorrect} bodov`;
+  document.getElementById('buzz-banner').style.border = '2px solid #7fe3ac';
+  revealAnswer(true);
+  document.getElementById('judge-row').style.display='none';
+  document.getElementById('next-row').style.display='flex';
+  renderScoreStrip();
+  syncGame({questionState:'revealed', teams: teams.map(t=>({name:t.name,color:t.color,score:t.score}))});
+});
+
+/* ---------------------------------------------------------
+   CONFETTI — quick celebratory burst on a correct answer
+--------------------------------------------------------- */
+function fireConfetti(teamColor){
+  const colors = [teamColor, '#e2b94b', '#7fe3ac', '#ffffff', '#e74c3c'];
+  const n = 60;
+  for(let i=0;i<n;i++){
+    const el = document.createElement('div');
+    el.className='confetti-piece';
+    const size = 6+Math.random()*7;
+    el.style.width = size+'px';
+    el.style.height = (size*0.4+4)+'px';
+    el.style.left = Math.random()*100+'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    const dur = 1.1+Math.random()*1.1;
+    el.style.animationDuration = dur+'s';
+    el.style.animationDelay = (Math.random()*0.25)+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), (dur+0.3)*1000);
+  }
+}
+
+document.getElementById('btn-wrong').addEventListener('click', ()=>{
+  if(buzzedTeamIdx===null) return;
+  sndWrong();
+  excludedTeamsThisQ.add(buzzedTeamIdx);
+  const wrongTeam = teams[buzzedTeamIdx].name;
+  buzzedTeamIdx = null;
+  document.getElementById('buzz-banner').classList.remove('show');
+  renderBuzzers();
+
+  const remainingTeams = teams.filter((t,i)=>!excludedTeamsThisQ.has(i));
+  if(remaining<=0 || remainingTeams.length===0){
+    questionState='revealed';
+    revealAnswer(false);
+    document.getElementById('judge-row').style.display='none';
+    document.getElementById('next-row').style.display='flex';
+    syncGame({questionState:'revealed', buzzedTeamIdx:null, excludedTeamsThisQ:[...excludedTeamsThisQ]});
+  } else {
+    questionState='running';
+    document.getElementById('judge-row').style.display='none';
+    startTimer();
+    syncGame({questionState:'running', buzzedTeamIdx:null, excludedTeamsThisQ:[...excludedTeamsThisQ], timerStartedAt:Date.now(), timerRemainingAtStart:remaining});
+  }
+});
+
+document.getElementById('btn-reveal').addEventListener('click', ()=>{
+  pauseTimer();
+  questionState='revealed';
+  revealAnswer(false);
+  document.getElementById('judge-row').style.display='none';
+  document.getElementById('reveal-row').style.display='none';
+  document.getElementById('next-row').style.display='flex';
+  syncGame({questionState:'revealed'});
+});
+
+// show the manual reveal button whenever running/idle so host can bail out
+function maybeShowRevealButton(){
+  document.getElementById('reveal-row').style.display = (questionState==='running'||questionState==='idle') ? 'flex' : 'none';
+}
+
+function revealAnswer(wasCorrect){
+  const i = activeQuestion.correct;
+  document.getElementById('opt-'+i).classList.add('correct-reveal');
+  const box = document.getElementById('answer-box');
+  box.classList.add('show');
+  box.innerHTML = `<b>✅ Správna odpoveď:</b> ${escapeHtml(activeQuestion.opts[i])}<br><span style="opacity:.85">${escapeHtml(activeQuestion.explain)}</span>`;
+}
+
+document.getElementById('btn-next').addEventListener('click', ()=>{
+  currentIndex++;
+  if(currentIndex>=queue.length){
+    showFinal();
+    return;
+  }
+  openQuestion(queue[currentIndex]);
+});
+
+// keyboard buzz-in
+document.addEventListener('keydown', (e)=>{
+  if(!document.getElementById('screen-question').classList.contains('active')) return;
+  const n = parseInt(e.key);
+  if(!isNaN(n) && n>=1 && n<=8){
+    tryBuzz(n-1);
+  }
+});
+
+// patch reveal-row visibility logic into state flow
+const _origTryBuzz = tryBuzz;
+tryBuzz = function(i){ _origTryBuzz(i); maybeShowRevealButton(); };
+const _origStartBtn = document.getElementById('btn-start-question');
+_origStartBtn.addEventListener('click', maybeShowRevealButton);
+
+/* ---------------------------------------------------------
+   FINAL SCREEN
+--------------------------------------------------------- */
+function showFinal(){
+  const sorted = [...teams].sort((a,b)=>b.score-a.score);
+  const podium = document.getElementById('podium');
+  podium.innerHTML='';
+  const order = [1,0,2]; // visual order: 2nd, 1st, 3rd
+  order.forEach(pos=>{
+    const t = sorted[pos];
+    if(!t) return;
+    const col = document.createElement('div');
+    col.className = 'pod-col pod-'+(pos+1);
+    col.innerHTML = `
+      <div class="pod-name">${pos===0?'🥇 ':pos===1?'🥈 ':'🥉 '}${escapeHtml(t.name)}</div>
+      <div class="pod-block">${t.score}</div>
+      <div class="pod-score">${t.score} b.</div>
+    `;
+    podium.appendChild(col);
+  });
+
+  const rest = document.getElementById('rest-list');
+  rest.innerHTML='';
+  sorted.slice(3).forEach((t,idx)=>{
+    const row = document.createElement('div');
+    row.className='rest-row';
+    row.innerHTML = `<span>${idx+4}. ${escapeHtml(t.name)}</span><span>${t.score} b.</span>`;
+    rest.appendChild(row);
+  });
+
+  document.getElementById('btn-restart').style.display='inline-flex';
+  showScreen('final');
+  syncGame({phase:'final', teams: teams.map(t=>({name:t.name,color:t.color,score:t.score}))});
+}
+
+document.getElementById('btn-restart').addEventListener('click', ()=>{
+  teams.forEach(t=>t.score=0);
+  currentIndex=0;
+  queue=[];
+  showScreen('setup');
+  syncGame({phase:'setup', questionState:'idle', buzzedTeamIdx:null, excludedTeamsThisQ:[]});
+});
+
+/* ---------------------------------------------------------
+   ROLE SCREEN — host vs. player (mobile buzzer)
+--------------------------------------------------------- */
+document.getElementById('btn-role-host').addEventListener('click', ()=>{
+  myRole = 'host';
+  showScreen('setup');
+  if(fdb) listenAsHost();
+});
+
+document.getElementById('btn-role-player').addEventListener('click', ()=>{
+  myRole = 'player';
+  enterPlayerMode();
+});
+
+document.getElementById('btn-change-team').addEventListener('click', ()=>{
+  myTeamIdx = null;
+  localStorage.removeItem('kapustnica_myTeamIdx');
+  showScreen('player-join');
+});
+
+/* ---------------------------------------------------------
+   HOST SIDE: mirror a buzz a phone claimed in Firestore onto
+   the host's own local state, only if the host hasn't already
+   processed a (local click/key) buzz for this question.
+--------------------------------------------------------- */
+function listenAsHost(){
+  if(gameUnsub) gameUnsub();
+  gameUnsub = gameDocRef().onSnapshot(snap=>{
+    const data = snap.data();
+    if(!data) return;
+    if(data.questionState==='buzzed' && data.buzzedTeamIdx!=null &&
+       questionState==='running' && buzzedTeamIdx===null){
+      applyRemoteBuzz(data.buzzedTeamIdx);
+    }
+  }, err=>console.warn('host listen error', err));
+}
+
+function applyRemoteBuzz(i){
+  buzzedTeamIdx = i;
+  questionState = 'buzzed';
+  pauseTimer();
+  sndBuzz();
+  const banner = document.getElementById('buzz-banner');
+  banner.textContent = `🔔 ${teams[i].name} sa prihlásil ako prvý (z mobilu)! Nech povie odpoveď nahlas.`;
+  banner.style.background = `linear-gradient(160deg, ${teams[i].color}44, transparent)`;
+  banner.style.color = '#fff';
+  banner.style.border = `2px solid ${teams[i].color}`;
+  banner.classList.add('show');
+  document.getElementById('judge-row').style.display='flex';
+  document.getElementById('reveal-row').style.display='none';
+  renderBuzzers();
+}
+
+/* ---------------------------------------------------------
+   PLAYER SIDE: join a team, then mirror the host's question
+   state (derived locally from buildQueue() + the synced
+   currentIndex, so the shared doc only needs tiny fields).
+--------------------------------------------------------- */
+function enterPlayerMode(){
+  showScreen('player-join');
+  if(!fdb){
+    document.getElementById('player-join-hint').textContent =
+      'Pripojenie k hre sa nepodarilo načítať (skontroluj internet) — skús obnoviť stránku.';
+    return;
+  }
+  const saved = localStorage.getItem('kapustnica_myTeamIdx');
+  if(saved!==null && saved!=='') myTeamIdx = parseInt(saved,10);
+
+  if(gameUnsub) gameUnsub();
+  gameUnsub = gameDocRef().onSnapshot(snap=>{
+    onPlayerSnapshot(snap.data());
+  }, err=>{
+    document.getElementById('player-join-hint').textContent = 'Nepodarilo sa pripojiť k hre.';
+    console.warn(err);
+  });
+}
+
+function onPlayerSnapshot(data){
+  lastPlayerData = data;
+  if(!data || !data.teams || !data.teams.length){
+    showScreen('player-join');
+    document.getElementById('player-join-hint').textContent = 'Čakáme, kým hostiteľ spustí hru...';
+    return;
+  }
+
+  renderPlayerTeamPicker(data.teams);
+
+  if(myTeamIdx===null || myTeamIdx>=data.teams.length){
+    showScreen('player-join');
+    return;
+  }
+
+  if(data.phase==='final'){
+    showFinalFromData(data.teams);
+    document.getElementById('btn-restart').style.display='none';
+    showScreen('final');
+    return;
+  }
+
+  if(data.phase!=='question'){
+    showScreen('player-join');
+    document.getElementById('player-join-hint').textContent = 'Čakáme, kým hostiteľ spustí hru...';
+    return;
+  }
+
+  renderPlayerQuestion(data);
+  showScreen('player-game');
+}
+
+function renderPlayerTeamPicker(teamsData){
+  const box = document.getElementById('player-team-list');
+  box.innerHTML='';
+  teamsData.forEach((t,i)=>{
+    const btn = document.createElement('button');
+    btn.className='team-pick-btn';
+    btn.style.background = `linear-gradient(160deg, ${t.color}, ${shade(t.color,-18)})`;
+    btn.textContent = (myTeamIdx===i? '✅ ' : '') + t.name + (myTeamIdx===i? ' (tvoj tím)':'');
+    btn.addEventListener('click', ()=>{
+      myTeamIdx = i;
+      localStorage.setItem('kapustnica_myTeamIdx', String(i));
+      document.getElementById('player-join-hint').textContent = `Si tím „${t.name}“. Čakáme na otázku...`;
+      onPlayerSnapshot(lastPlayerData);
+    });
+    box.appendChild(btn);
+  });
+}
+
+function renderPlayerQuestion(data){
+  const q = getPlayerQueue();
+  const entry = q[data.currentIndex];
+  if(!entry) return;
+  const total = q.length;
+
+  document.getElementById('p-round-title').textContent = `Otázka ${data.currentIndex+1} z ${total}`;
+  const pill = document.getElementById('p-diff-pill');
+  pill.textContent = `${BAND_NAMES[entry.bandIdx]} · krok ${entry.subStep}/4`;
+  pill.className = 'diff-pill ' + BAND_CLASS[entry.bandIdx];
+  document.getElementById('p-progress-fill').style.width = Math.round((data.currentIndex/total)*100)+'%';
+
+  document.getElementById('p-q-cat-label').textContent = `${entry.cat.icon} ${entry.cat.name}`;
+  document.getElementById('p-q-text').textContent = entry.question.q;
+
+  const optsBox = document.getElementById('p-q-opts');
+  optsBox.innerHTML='';
+  const letters=['A','B','C','D'];
+  entry.question.opts.forEach((opt,i)=>{
+    const div = document.createElement('div');
+    div.className='opt' + (data.questionState==='revealed' && i===entry.question.correct ? ' correct-reveal':'');
+    div.innerHTML = `<span class="letter">${letters[i]})</span><span>${escapeHtml(opt)}</span>`;
+    optsBox.appendChild(div);
+  });
+
+  const answerBox = document.getElementById('p-answer-box');
+  if(data.questionState==='revealed'){
+    answerBox.classList.add('show');
+    answerBox.innerHTML = `<b>✅ Správna odpoveď:</b> ${escapeHtml(entry.question.opts[entry.question.correct])}<br><span style="opacity:.85">${escapeHtml(entry.question.explain)}</span>`;
+  } else {
+    answerBox.classList.remove('show');
+    answerBox.innerHTML='';
+  }
+
+  let rem = data.timerRemainingAtStart||0;
+  if(data.questionState==='running' && data.timerStartedAt){
+    rem = Math.max(0, rem - (Date.now()-data.timerStartedAt)/1000);
+  }
+  document.getElementById('p-timer-num').textContent = Math.ceil(rem);
+  const pct = Math.max(0,Math.min(100,(rem/(data.timerDuration||25))*100));
+  document.getElementById('p-timer-fill').style.width = pct+'%';
+
+  const banner = document.getElementById('p-buzz-banner');
+  const buzzBtn = document.getElementById('p-buzz-btn');
+  const myTeam = data.teams[myTeamIdx];
+  const excluded = (data.excludedTeamsThisQ||[]).includes(myTeamIdx);
+  const iAmWinner = data.buzzedTeamIdx===myTeamIdx;
+
+  banner.classList.remove('show');
+  buzzBtn.style.display='none';
+  buzzBtn.disabled=false;
+
+  if(data.questionState==='idle'){
+    banner.textContent = '⏳ Hostiteľ sa chystá spustiť otázku...';
+    banner.classList.add('show');
+  } else if(data.questionState==='running'){
+    if(excluded){
+      banner.textContent = '❌ Skúsili ste a boli ste nesprávne — čakajte na ďalšiu otázku.';
+      banner.classList.add('show');
+    } else {
+      buzzBtn.style.display='block';
+      buzzBtn.style.background = `linear-gradient(160deg, ${myTeam.color}, ${shade(myTeam.color,-18)})`;
+    }
+  } else if(data.questionState==='buzzed'){
+    if(iAmWinner){
+      banner.textContent = '🔔 STE PRVÍ! Povedzte odpoveď nahlas hostiteľovi.';
+    } else if(excluded){
+      banner.textContent = '❌ Skúsili ste a boli ste nesprávne.';
+    } else {
+      banner.textContent = `🔔 ${data.teams[data.buzzedTeamIdx].name} sa prihlásil ako prvý...`;
+    }
+    banner.classList.add('show');
+  } else if(data.questionState==='revealed'){
+    banner.textContent = '👁️ Odpoveď je zobrazená nižšie.';
+    banner.classList.add('show');
+  }
+
+  document.getElementById('p-my-team-label').textContent = `Hráš za tím: ${myTeam.name} · Skóre: ${myTeam.score}`;
+}
+
+document.getElementById('p-buzz-btn').addEventListener('click', async ()=>{
+  if(myTeamIdx===null) return;
+  const btn = document.getElementById('p-buzz-btn');
+  btn.disabled = true;
+  sndBuzz();
+  if(navigator.vibrate) navigator.vibrate(60);
+  await claimBuzz(myTeamIdx);
+});
+
+// smooth local timer tick on the player's screen between snapshots
+setInterval(()=>{
+  if(myRole==='player' && lastPlayerData && lastPlayerData.phase==='question' &&
+     lastPlayerData.questionState==='running' &&
+     document.getElementById('screen-player-game').classList.contains('active')){
+    renderPlayerQuestion(lastPlayerData);
+  }
+}, 300);
+
+function showFinalFromData(teamsData){
+  const sorted = [...teamsData].sort((a,b)=>b.score-a.score);
+  const podium = document.getElementById('podium');
+  podium.innerHTML='';
+  const order = [1,0,2];
+  order.forEach(pos=>{
+    const t = sorted[pos];
+    if(!t) return;
+    const col = document.createElement('div');
+    col.className = 'pod-col pod-'+(pos+1);
+    col.innerHTML = `
+      <div class="pod-name">${pos===0?'🥇 ':pos===1?'🥈 ':'🥉 '}${escapeHtml(t.name)}</div>
+      <div class="pod-block">${t.score}</div>
+      <div class="pod-score">${t.score} b.</div>
+    `;
+    podium.appendChild(col);
+  });
+  const rest = document.getElementById('rest-list');
+  rest.innerHTML='';
+  sorted.slice(3).forEach((t,idx)=>{
+    const row = document.createElement('div');
+    row.className='rest-row';
+    row.innerHTML = `<span>${idx+4}. ${escapeHtml(t.name)}</span><span>${t.score} b.</span>`;
+    rest.appendChild(row);
+  });
+}
+
+/* ---------------------------------------------------------
+   INIT
+--------------------------------------------------------- */
+function init(){
+  initSnow();
+  teams = [
+    {name:'Tím 1', color:TEAM_COLORS[0], score:0},
+    {name:'Tím 2', color:TEAM_COLORS[1], score:0},
+    {name:'Tím 3', color:TEAM_COLORS[2], score:0},
+    {name:'Tím 4', color:TEAM_COLORS[3], score:0},
+  ];
+  renderTeamList();
+  const qr = document.getElementById('join-qr');
+  if(qr) qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(location.href)}`;
+  const status = document.getElementById('firebase-status');
+  if(status) status.textContent = fdb ? '' : '⚠️ Pripojenie pre mobilné tímy sa nepodarilo načítať — hra na jednej obrazovke bude stále fungovať.';
+}
+init();
+</script>
+</body>
+</html>
